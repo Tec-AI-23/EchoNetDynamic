@@ -1,5 +1,14 @@
 # Ignore EchoNet-Dynamic folder
-EchoNet-Dynamic/Videos
+EchoNet-Dynamic
 
 # Ignora la extension de vsc
 .vscode
+
+# Ignora data
+data
+
+# Ignore cached and stored variables
+*.pth.tar
+*.pyc
+
+*.jpg
