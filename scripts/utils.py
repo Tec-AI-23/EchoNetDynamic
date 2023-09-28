@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import torch
 import torchvision
 from dataset import EchoDataset
@@ -9,9 +10,11 @@ def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
     torch.save(state, filename)
 
+
 def load_checkpoint(checkpoint, model):
     print("=> Loading checkpoint")
     model.load_state_dict(checkpoint["state_dict"])
+
 
 def get_loaders(
     train_dir,
@@ -54,6 +57,7 @@ def get_loaders(
 
     return train_loader, val_loader
 
+
 def check_accuracy(loader, model, device="cuda"):
     num_correct = 0
     num_pixels = 0
@@ -79,12 +83,10 @@ def check_accuracy(loader, model, device="cuda"):
     model.train()
 
 
-import matplotlib.pyplot as plt
-
 def save_predictions_as_imgs(
     loader, model, folder="saved_images/", device="cuda"
 ):
-    
+
     isExist = os.path.exists(folder)
     if not isExist:
         # Create a new directory because it does not exist
@@ -98,23 +100,14 @@ def save_predictions_as_imgs(
         torchvision.utils.save_image(
             preds, f"{folder}/pred_{idx}.jpg"
         )
-        # print(y.size())
-        # print(y.unsqueeze(1).size())
-        # print('y', y)
-        # print('y', y.unsqueeze(1))
-        # print(x.size())
-        print('y',y.size())
-        print('preds',preds.size())
+        print('y', y.size())
+        print('preds', preds.size())
 
-
-        plt.imshow(y.cpu().squeeze(),cmap="gray")
+        plt.axis('off')
+        plt.tight_layout(True)
+        plt.imshow(y.cpu().squeeze(), cmap="gray")
         plt.savefig(f"{folder}/{idx}test.jpg")
 
-        torchvision.utils.save_image(y.unsqueeze(1), f"{folder}/{idx}.jpg")
-
-       # torchvision.utils.save_image(x.unsqueeze(1), f"{folder}/{idx}.jpg")
-
-    
-
+        # torchvision.utils.save_image(y.unsqueeze(1), f"{folder}/{idx}.jpg")
 
     model.train()

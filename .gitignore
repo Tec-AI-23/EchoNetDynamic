@@ -10,3 +10,5 @@ data
 # Ignore cached and stored variables
 *.pth.tar
 *.pyc
+
+*.jpg
