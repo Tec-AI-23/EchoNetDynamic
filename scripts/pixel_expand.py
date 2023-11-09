@@ -1,36 +1,47 @@
-def pixel_expand(matrix, x, y, expansion=3):
-    print(matrix[x][y])
-    if matrix[x][y] != 1:
-        print("wut")
-        return matrix
+import numpy as np
+import matplotlib.pyplot as plt
 
-    rows, cols = len(matrix), len(matrix[0])
+def generate_pixel_circle(radius):
+    grid_size = radius * 2 + 1
+    z = np.zeros((grid_size, grid_size))
+    n = len(z)
+    m = len(z[0])
 
-    def dfs(row, col):
-        if row < 0 or row >= rows or col < 0 or col >= cols or matrix[row][col] != 0:
-            return
-        matrix[row][col] = 1  # Expand the circle
-        dfs(row - 1, col)  # Up
-        dfs(row + 1, col)  # Down
-        dfs(row, col - 1)  # Left
-        dfs(row, col + 1)  # Right
+    center_x = n // 2
+    center_y = m // 2
 
-        dfs(x, y)
+    I, J = np.meshgrid(np.arange(z.shape[0]), np.arange(z.shape[1]))
 
-    return matrix
+    # calculate distance of all points to centre
+    dist = np.sqrt((I - center_x) ** 2 + (J - center_y) ** 2)
 
+    # Assign value of 1 to those points where dist<radius:
+    z[np.where(dist < radius)] = 1
 
-# Example usage:
-matrix = [
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-]
+    return z
 
-expanded_matrix = pixel_expand(matrix, 2, 2)
+def plot_matrix(matrix):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.pcolormesh(matrix)
+    ax.set_aspect("equal")
+    plt.axis("off")
+    plt.tight_layout()
 
-# Print the expanded matrix
-for row in expanded_matrix:
-    print(row)
+def expand_pixel(matrix, x, y, expansion_radius=5):
+    kernel = generate_pixel_circle(expansion_radius)
+
+    # Get coordinates to align both matrices
+    center_x, center_y = x, y
+    start_x = center_x - kernel.shape[0] // 2
+    start_y = center_y - kernel.shape[1] // 2
+    new_matrix = np.zeros_like(matrix, dtype=bool)
+    height, width = matrix.shape
+
+    for i in range(len(kernel)):
+        for j in range(len(kernel[0])):
+            px, py = start_x + i, start_y + j
+            if 0 <= px < height and 0 <= py < width:
+                new_matrix[px][py] = np.logical_or(matrix[px][py], kernel[i][j])
+
+    return new_matrix
