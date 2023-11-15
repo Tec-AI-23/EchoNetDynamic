@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 import torchvision
-from dataset_masks import EchoDataset
-from dataset_heatmap import EchoDatasetHeatmap
+from dataset import EchoDatasetLan
 from torch.utils.data import DataLoader
 import os
 import cv2
@@ -62,6 +61,8 @@ def get_loaders_masks(
 
     return train_loader, val_loader
 
+def get_loaders_landmarks():
+    pass
 
 
 def get_loaders_landmarks(
