@@ -5,7 +5,7 @@ import torch
 import os
 
 
-class heatmapGeneration():
+class HeatmapGeneration():
     def __init__(self, path_tensors='../EchoNet-Dynamic/tensors/', path_masks='../EchoNet-Dynamic/masked/', frame_info=None):
         self.path_toTensors = path_tensors
         self.path_masks = path_masks
