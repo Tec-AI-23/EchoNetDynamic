@@ -19,7 +19,7 @@ class FrameExtraction:
         self.images_info_path = images_info_path
 
     def save_images(self, num_landmarks=None):
-        pp_img_df = pd.DataFrame(columns=['File', 'X', 'Y'])
+        frame_info = pd.DataFrame(columns=['File', 'X', 'Y'])
         files = os.listdir(self.path)
 
         for file in files[:2]:
@@ -43,11 +43,28 @@ class FrameExtraction:
                     if num_landmarks == None:
                         for punto in landmarks:
                             new_row = {'File': name_img, 'X': punto[0], 'Y': punto[1]}
-                            pp_img_df.loc[len(pp_img_df)] = new_row
-                    
-                        cv2.imwrite(path_img, img)
+                            frame_info.loc[len(frame_info)] = new_row
+                    else:
+                        frame_info = self.optimalLandmarks(landmarks, frame_info, name_img)
+                    cv2.imwrite(path_img, img)
         
-        pp_img_df.to_csv(self.images_info_path, index=False)
+        frame_info.to_csv(self.images_info_path, index=False)
         print('¡Straction Done!')
         print('Path images: ', self.path_save)
         print('Path df: ', self.images_info_path)
+        
+        
+        
+    def optimalLandmarks(self, landmarks, dataframe, name):
+        puntos = []
+        puntos.append(landmarks[0])
+        puntos.append(landmarks[-1])
+        puntos.append(landmarks[len(landmarks) // 4])
+        puntos.append(landmarks[len(landmarks) // 2])
+        puntos.append(landmarks[(len(landmarks)*3) // 4])
+        
+        for punto in puntos:
+            new_row = {'File': name, 'X': punto[0], 'Y': punto[1]}
+            dataframe.loc[len(dataframe)] = new_row
+            
+        return dataframe
