@@ -112,7 +112,6 @@ class HeatmapGeneration:
         result = (matrix - min_value) / (max_value - min_value)
         result = np.clip(result, 0, None)
         return result
-
     def getContour(self, path_mask, iterations, kernel):
         mask = cv.imread(path_mask)
         dilated_img = cv.dilate(mask, kernel, iterations=iterations)
