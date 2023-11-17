@@ -1,0 +1,12 @@
+numpy
+pandas
+matplotlib
+pillow
+torch
+torchvision
+opencv-python
+skimage
+seaborn
+ipython
+tqdm
+albumentations
