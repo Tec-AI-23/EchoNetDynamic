@@ -9,7 +9,7 @@ TRAIN_IMG_DIR = "../data/train_images/"
 TRAIN_MASK_DIR = "../data/train_masks/"
 VAL_IMG_DIR = "../data/val_images/"
 #VAL_MASK_DIR = "../data/val_masks/"
-VAL_MASK_DIR = "../EchoNet-Dynamic/masked/"
+VAL_MASK_DIR = "../EchoNet-Dynamic/data/masks/"
 
 
 class Mask:
@@ -17,12 +17,12 @@ class Mask:
         self,
         file_info,
         amount_of_frames=2,
-        videos_path="../EchoNet-Dynamic/images/",
+        files_path="../EchoNet-Dynamic/data/images/",
         images_files_array=[],
     ):
         self.file_info = file_info
         self.amount_of_frames = amount_of_frames
-        self.path = videos_path
+        self.path = files_path
         self.images_files_array = images_files_array
 
     def set_images_files_array(self, images_files_array):
