@@ -1,8 +1,10 @@
-import pixel_expand
-import numpy as np
-import cv2 as cv
-import torch
 import os
+import torch
+import cv2 as cv
+import numpy as np
+import pixel_expand
+from skimage.filters import gaussian
+import matplotlib.pyplot as plt
 
 
 class HeatmapGeneration():
@@ -11,7 +13,7 @@ class HeatmapGeneration():
         self.path_masks = path_masks
         self.frame_info = frame_info
     
-    def euclidian_heatmap(self, kernel_shape=(3,3), morphological_iterations = 2, save_as_tensor=True, radius = 10):
+    def heatmap(self, distribution='Gaussian', kernel_shape=(3,3), morphological_iterations = 2, save_as_tensor=True, radius=10):
         files = self.frame_info['File'].unique()
         kernel = np.ones(kernel_shape, np.uint8)
         
@@ -23,27 +25,58 @@ class HeatmapGeneration():
             contour = self.getContour(path_mask, morphological_iterations, kernel)
             result_img = np.zeros(contour.shape[:2] + (len(puntos),), dtype=np.uint8)
             area_pixel = np.zeros(contour.shape[:2], dtype=np.uint8)
+
+            #fig, axs = plt.subplots(1, len(puntos), figsize=(20,20))
             
             for i in range(len(puntos)):
                 coor_x = puntos[i][0]
-                coor_y = puntos[i][0]
-                area_pixel = pixel_expand.expand_pixel(area_pixel, coor_y, coor_x, radius)
-                x, y = np.meshgrid(np.arange(contour.shape[0]), np.arange(contour.shape[0]))
-                distance = np.sqrt((x - coor_x)**2 + (y - coor_y)**2)
-                distance = distance / distance.max()
-                euclidean_matrix = 1 - distance
-                euclidean_radius = euclidean_matrix * area_pixel
-                euclidean_scaled = self.scale_euclidean_matrix(euclidean_radius)
-                heatmap_channel = euclidean_scaled * contour
-                result_img[:,:,i] = heatmap_channel
+                coor_y = puntos[i][1]
+                
+                if distribution == 'Euclidian':
+                    heatmap = self.euclidian_distribution(area_pixel, coor_x, coor_y, contour.shape[0], radius)
+                    heatmap = heatmap * contour
+                    result_img[:,:,i] = heatmap
+                    #axs[i].imshow(heatmap)
+                    #axs[i].axis('off')
+                
+                elif distribution == 'Gaussian':
+                    heatmap = self.gaussian_distribution(area_pixel.shape, coor_x, coor_y, radius)
+                    heatmap = heatmap * contour
+                    result_img[:,:,i] = heatmap
+                    #axs[i].imshow(heatmap)
+                    #axs[i].axis('off')
+                    
+                else:
+                    raise ValueError(distribution + ' is not a distribution type supported by this class')
             
             if save_as_tensor:
                 img_as_tensor = torch.tensor(result_img)
                 name_tensor = file[:-4] + 'pt'
                 path_tensor = os.path.join(self.path_toTensors, name_tensor)
                 torch.save(img_as_tensor, path_tensor)
+                
+                
+                
+    def gaussian_distribution(self, shape, coor_x, coor_y, radius):
+        pixel = np.zeros(shape, dtype=np.uint8)
+        pixel[coor_y][coor_x] = 1.0
+        variance = radius / 2  
+        gaussian_area = gaussian(pixel, sigma=[variance, variance])
+        gaussian_scaled = self.scale_distribution(gaussian_area)
+        return gaussian_scaled
             
-    def scale_euclidean_matrix(self, matrix):
+                
+    def euclidian_distribution(self, area_pixel, coor_x, coor_y, shape, radius):
+        pixel_expanded = pixel_expand.expand_pixel(area_pixel, coor_y, coor_x, radius)
+        x, y = np.meshgrid(np.arange(shape), np.arange(shape))
+        distance = np.sqrt((x - coor_x)**2 + (y - coor_y)**2)
+        distance = distance / distance.max()
+        euclidean_matrix = 1 - distance
+        euclidean_radius = euclidean_matrix * pixel_expanded
+        euclidean_scaled = self.scale_distribution(euclidean_radius)
+        return euclidean_scaled
+        
+    def scale_distribution(self, matrix):
         matrix_flatted = matrix.flatten()
         non_zeros = matrix_flatted[matrix_flatted != 0]
         min_value = non_zeros.min()
@@ -51,7 +84,6 @@ class HeatmapGeneration():
         result = (matrix - min_value) / (max_value - min_value)
         result = np.clip(result, 0, None)
         return result
-                
                 
     def getContour(self, path_mask, iterations, kernel):
         mask = cv.imread(path_mask)
@@ -61,3 +93,4 @@ class HeatmapGeneration():
         _, contour = cv.threshold(contour, 200, 255, cv.THRESH_BINARY)
         contour = contour[:,:,0] / 255.0
         return contour
+    
