@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 class HeatmapGeneration():
-    def __init__(self, path_tensors='../EchoNet-Dynamic/tensors/', path_masks='../EchoNet-Dynamic/masked/', frame_info=None):
+    def __init__(self, path_tensors='../EchoNet-Dynamic/data/heatmaps/', path_masks='../EchoNet-Dynamic/data/masks', frame_info=None):
         self.path_toTensors = path_tensors
         self.path_masks = path_masks
         self.frame_info = frame_info
@@ -19,6 +19,7 @@ class HeatmapGeneration():
         
         for file in files:
             path_mask = os.path.join(self.path_masks, file)
+            path_tensor = ''
             coor = self.frame_info[self.frame_info.File == file]
             puntos = [(row['X'], row['Y']) for index, row in coor.iterrows()]
             
@@ -32,14 +33,16 @@ class HeatmapGeneration():
                 coor_x = puntos[i][0]
                 coor_y = puntos[i][1]
                 
-                if distribution == 'Euclidian':
-                    heatmap = self.euclidian_distribution(area_pixel, coor_x, coor_y, contour.shape[0], radius)
+                if distribution == 'Euclidean':
+                    path_tensor = os.path.join(self.path_toTensors, 'euclidean')
+                    heatmap = self.euclidean_distribution(area_pixel, coor_x, coor_y, contour.shape[0], radius)
                     heatmap = heatmap * contour
                     result_img[:,:,i] = heatmap
                     #axs[i].imshow(heatmap)
                     #axs[i].axis('off')
                 
                 elif distribution == 'Gaussian':
+                    path_tensor = os.path.join(self.path_toTensors, 'gaussian')
                     heatmap = self.gaussian_distribution(area_pixel.shape, coor_x, coor_y, radius)
                     heatmap = heatmap * contour
                     result_img[:,:,i] = heatmap
@@ -52,7 +55,7 @@ class HeatmapGeneration():
             if save_as_tensor:
                 img_as_tensor = torch.tensor(result_img)
                 name_tensor = file[:-4] + 'pt'
-                path_tensor = os.path.join(self.path_toTensors, name_tensor)
+                path_tensor = os.path.join(path_tensor, name_tensor)
                 torch.save(img_as_tensor, path_tensor)
                 
                 
@@ -66,7 +69,7 @@ class HeatmapGeneration():
         return gaussian_scaled
             
                 
-    def euclidian_distribution(self, area_pixel, coor_x, coor_y, shape, radius):
+    def euclidean_distribution(self, area_pixel, coor_x, coor_y, shape, radius):
         pixel_expanded = pixel_expand.expand_pixel(area_pixel, coor_y, coor_x, radius)
         x, y = np.meshgrid(np.arange(shape), np.arange(shape))
         distance = np.sqrt((x - coor_x)**2 + (y - coor_y)**2)
