@@ -22,7 +22,7 @@ The Stanford University data set have 10,030 echocardiography videos (approximat
 
 ![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/bf563538-a787-429a-9169-a594d3a0e808)
 
-Like we said before, the data set contains clinical measurements that will be ignored, since we onluy want to generate masks tracing the left ventricle. As the data is from the Stanford University, we assume that it follows laws concerning privacy on medical data. The data set can be found in the Stanford web page. The data set will be stored only locally to avoid any possible disturb.
+Like we said before, the data set contains clinical measurements that will be ignored, since we only want to generate masks tracing the left ventricle. As the data is from the Stanford University, we assume that it follows laws concerning privacy on medical data. The data set can be found in the Stanford web page. The data set will be stored only locally to avoid any possible disturb.
 
 [^1]: Nasim, M. A. A., Munem, A. A., Islam, M., Palash, M. A. H., Haque, M. M. A., & Shah, F. M. (2023). Brain tumor segmentation using enhanced u-net model with empirical analysis.
 [^2]: Long, J., Shelhamer, E., & Darrell, T. (2015, June). Fully convolutional net-works for semantic segmentation. In Proceedings of the ieee conference on computer vision and pattern recognition (cvpr).
