@@ -33,16 +33,14 @@ class HeatmapGeneration():
                 coor_x = puntos[i][0]
                 coor_y = puntos[i][1]
                 
-                if distribution == 'Euclidean':
-                    path_tensor = os.path.join(self.path_toTensors, 'euclidean')
-                    heatmap = self.euclidean_distribution(area_pixel, coor_x, coor_y, contour.shape[0], radius)
+                if distribution == 'Euclidian':
+                    heatmap = self.euclidian_distribution(area_pixel, coor_x, coor_y, contour.shape[0], radius)
                     heatmap = heatmap * contour
                     result_img[:,:,i] = heatmap
                     #axs[i].imshow(heatmap)
                     #axs[i].axis('off')
                 
                 elif distribution == 'Gaussian':
-                    path_tensor = os.path.join(self.path_toTensors, 'gaussian')
                     heatmap = self.gaussian_distribution(area_pixel.shape, coor_x, coor_y, radius)
                     heatmap = heatmap * contour
                     result_img[:,:,i] = heatmap
@@ -69,7 +67,7 @@ class HeatmapGeneration():
         return gaussian_scaled
             
                 
-    def euclidean_distribution(self, area_pixel, coor_x, coor_y, shape, radius):
+    def euclidian_distribution(self, area_pixel, coor_x, coor_y, shape, radius):
         pixel_expanded = pixel_expand.expand_pixel(area_pixel, coor_y, coor_x, radius)
         x, y = np.meshgrid(np.arange(shape), np.arange(shape))
         distance = np.sqrt((x - coor_x)**2 + (y - coor_y)**2)
