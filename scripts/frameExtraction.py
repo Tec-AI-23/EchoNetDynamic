@@ -8,8 +8,8 @@ class FrameExtraction:
     def __init__ (
         self, 
         video_info, 
-        videos_path='../EchoNet-Dynamic/Videos/', 
-        path_save='../EchoNet-Dynamic/images/',
+        videos_path='../EchoNet-Dynamic/videos/', 
+        path_save='../EchoNet-Dynamic/data/images/',
         images_info_path='../EchoNet-Dynamic/images_info.csv'
         ):
 
