@@ -4,12 +4,15 @@ import pandas as pd
 import os
 import seaborn as sns
 from IPython.display import Image, display
+import FILE_PATHS
 
+""" We really need to stop commenting things hehe
 TRAIN_IMG_DIR = "../data/train_images/"
 TRAIN_MASK_DIR = "../data/train_masks/"
 VAL_IMG_DIR = "../data/val_images/"
-#VAL_MASK_DIR = "../data/val_masks/"
-VAL_MASK_DIR = "../EchoNet-Dynamic/data/masks/"
+VAL_MASK_DIR = "../data/val_masks/"
+"""
+VAL_MASK_DIR = FILE_PATHS.MAKS
 
 
 class Mask:
@@ -42,25 +45,25 @@ class Mask:
         path = self.path
         file_info = self.file_info
         amount_of_frames = self.amount_of_frames
-        
+
         for file in images_files_array:
             path_file = os.path.join(path, file)
             info_file = file_info[file_info.File == file]
-            cordinates = [(row['X'], row['Y']) for _, row in info_file.iterrows()]
-            
+            cordinates = [(row["X"], row["Y"]) for _, row in info_file.iterrows()]
+
             output_image = None
             cap = cv2.imread(path_file)
-            
+
             if mask_type == "centroid":
-                    output_image = self.centroid(
-                        cordinates, show_centroid, cap, include_base_image
-                    )
+                output_image = self.centroid(
+                    cordinates, show_centroid, cap, include_base_image
+                )
             elif mask_type == "convex":
-                    output_image = self.convex(cordinates, cap, include_base_image)
+                output_image = self.convex(cordinates, cap, include_base_image)
             elif mask_type == "simple_sort":
-                    output_image = self.simple_sort(cordinates, cap, include_base_image)
+                output_image = self.simple_sort(cordinates, cap, include_base_image)
             elif mask_type == "points":
-                    output_image = self.points(cordinates, cap)
+                output_image = self.points(cordinates, cap)
             else:
                 print("There is no mask type called:", mask_type)
                 return
@@ -79,23 +82,20 @@ class Mask:
                 display(Image(data=cv2.imencode(".jpg", output_image)[1].tobytes()))
         if action == "save":
             print("IMAGE SAVING DONE!")
-            
-            
-            
+
     def points(self, cordinates, cap):
         img = cap
         if img is not None:
             for point in cordinates:
                 cv2.circle(img, point, 1, (0, 255, 0), -1)
-                
+
         return img
 
     def centroid(self, coordinates, show_centroid, cap, include_base_image=False):
-        
         centroid = np.mean(coordinates, axis=0)
         x = [coord[0] for coord in coordinates]
         y = [coord[1] for coord in coordinates]
-                
+
         angles = np.arctan2(y - centroid[1], x - centroid[0])
 
         sorted_indices = np.argsort(angles)
@@ -104,7 +104,7 @@ class Mask:
         poly = np.array(sorted_points, np.int32)
 
         img = None
-        
+
         if cap is not None:
             img = cap
             if include_base_image:
@@ -116,11 +116,11 @@ class Mask:
                         1,
                         (0, 255, 0),
                         1,
-                        )
+                    )
             else:
                 img = np.zeros(img.shape[:2], dtype=np.uint8)
                 cv2.fillPoly(img, [poly], 255)
-                
+
         return img
 
     def convex(self, cordinates, cap, include_base_image=False):
@@ -129,18 +129,18 @@ class Mask:
         sorted_points = np.vstack((sorted_points, [sorted_points[0]]))
         poly = np.array(sorted_points, np.int32)
         img = cap
-        
+
         if img is not None:
             if include_base_image:
                 cv2.fillPoly(img, [poly], (255, 255, 255, 90))
             else:
                 img = np.zeros(img.shape[:2], dtype=np.uint8)
-            
+
         return img
 
     def simple_sort(self, cordinates, cap, include_base_image=False):
         sorted_puntos = sorted(cordinates, key=lambda x: x[1])
-        
+
         img = cap
         if cap is not None:
             cv2.fillPoly(img, [sorted_puntos], (255, 255, 255, 90))
@@ -152,15 +152,9 @@ class Mask:
             for point in cordinates:
                 cv2.circle(img, point, 1, (0, 255, 0), -1)
         else:
-            print('There is not image to use')
-        return img    
-            
-            
-            
-            
-            
-            
-            
+            print("There is not image to use")
+        return img
+
         """ for file in images_files_array:
             path_file = os.path.join(path, file)
             cap = cv2.VideoCapture(path_file)

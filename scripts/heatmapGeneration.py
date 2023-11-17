@@ -5,13 +5,13 @@ import numpy as np
 import pixel_expand
 from skimage.filters import gaussian
 import matplotlib.pyplot as plt
-
+import FILE_PATHS
 
 class HeatmapGeneration:
     def __init__(
         self,
-        path_tensors="../EchoNet-Dynamic/data/heatmaps/",
-        path_masks="../EchoNet-Dynamic/data/masks",
+        path_tensors=FILE_PATHS.HEATMAPS,
+        path_masks=FILE_PATHS.MAKS,
         frame_info=None,
     ):
         self.path_toTensors = path_tensors
