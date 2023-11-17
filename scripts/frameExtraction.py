@@ -6,13 +6,14 @@ import FILE_PATHS
 
 
 class FrameExtraction:
-    def __init__(
-        self,
-        video_info,
-        path_save,
-        videos_path=FILE_PATHS.VIDEOS,
-        images_info_path=f"{FILE_PATHS.ECHONET}/images_info.csv",
-    ):
+    def __init__ (
+        self, 
+        video_info, 
+        videos_path='../EchoNet-Dynamic/videos/', 
+        path_save='../EchoNet-Dynamic/data/images/',
+        images_info_path='../EchoNet-Dynamic/images_info.csv'
+        ):
+
         self.video_info = video_info
         self.path = videos_path
         self.path_save = path_save
