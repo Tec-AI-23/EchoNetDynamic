@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 import torchvision
-from dataset import EchoDataset
+from dataset import EchoDatasetLan
 from torch.utils.data import DataLoader
 import os
 
@@ -16,7 +16,7 @@ def load_checkpoint(checkpoint, model):
     model.load_state_dict(checkpoint["state_dict"])
 
 
-def get_loaders(
+def get_loaders_masks(
     train_dir,
     train_maskdir,
     val_dir,
@@ -57,6 +57,8 @@ def get_loaders(
 
     return train_loader, val_loader
 
+def get_loaders_landmarks():
+    pass
 
 def check_accuracy(loader, model, device="cuda"):
     num_correct = 0

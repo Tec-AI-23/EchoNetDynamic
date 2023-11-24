@@ -2,15 +2,15 @@ import cv2
 import os
 import numpy as np
 import pandas as pd
-
+import FILE_PATHS
 
 class FrameExtraction:
     def __init__ (
         self, 
         video_info, 
-        videos_path='../EchoNet-Dynamic/videos/', 
-        path_save='../EchoNet-Dynamic/data/images/',
-        images_info_path='../EchoNet-Dynamic/images_info.csv'
+        videos_path=FILE_PATHS.VIDEOS, 
+        path_save=FILE_PATHS.IMAGES,
+        images_info_path=f'{FILE_PATHS.ECHONET}/images_info.csv'
         ):
 
         self.video_info = video_info
