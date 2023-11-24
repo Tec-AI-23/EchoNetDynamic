@@ -29,7 +29,7 @@ class FrameExtraction:
 
             for frame in frames:
                 landmarks = []
-                name_img = file[:-4] + "_" + str(frame) + ".jpeg"
+                name_img = file[:-4] + '_' + str(frame) + '.png'
                 path_img = os.path.join(self.path_save, name_img)
                 coor = self.video_info[
                     (self.video_info.FileName == file)

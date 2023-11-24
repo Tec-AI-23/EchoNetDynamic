@@ -20,4 +20,7 @@ def split(s):
         IMAGES = "../EchoNet-Dynamic/data/validation/images"
         MASKS = "../EchoNet-Dynamic/data/validation/masks"
         HEATMAPS = "../EchoNet-Dynamic/data/validation/heatmaps"
+    else:
+        print("write a correct split")
+
     return IMAGES, MASKS, HEATMAPS

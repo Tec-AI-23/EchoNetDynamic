@@ -1,6 +1,10 @@
 # Ignore EchoNet-Dynamic folder
 EchoNet-Dynamic
 
+
+#ignore predictions
+saved_images
+
 # Ignora la extension de vsc
 .vscode
 
