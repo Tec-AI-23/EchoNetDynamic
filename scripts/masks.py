@@ -25,7 +25,7 @@ class Mask:
         images_files_array=[],
     ):
         self.file_info = file_info
-        self.MASK_DIR =MASK_DIR
+        self.MASK_DIR = MASK_DIR
         self.amount_of_frames = amount_of_frames
         self.path = files_path
         self.images_files_array = images_files_array
@@ -48,7 +48,6 @@ class Mask:
         file_info = self.file_info
         amount_of_frames = self.amount_of_frames
         MASK_DIR = self.MASK_DIR
-        
         for file in images_files_array:
             path_file = os.path.join(path, file)
             info_file = file_info[file_info.File == file]
