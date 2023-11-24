@@ -4,6 +4,8 @@ ECHONET = "../EchoNet-Dynamic"
 VIDEOS = "../EchoNet-Dynamic/videos"
 
 DATA = "../EchoNet-Dynamic/data"
+IMAGES = "../EchoNet-Dynamic/data/images"
+MASKS = "../EchoNet-Dynamic/data/masks"
 
 TRAIN = "../EchoNet-Dynamic/data/train"
 VALIDATION = "../EchoNet-Dynamic/validation"

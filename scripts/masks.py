@@ -10,8 +10,9 @@ import FILE_PATHS
 TRAIN_IMG_DIR = "../data/train_images/"
 TRAIN_MASK_DIR = "../data/train_masks/"
 VAL_IMG_DIR = "../data/val_images/"
-#VAL_MASK_DIR = "../data/val_masks/"
-VAL_MASK_DIR = "../EchoNet-Dynamic/data/masks/"
+VAL_MASK_DIR = "../data/val_masks/"
+"""
+VAL_MASK_DIR = FILE_PATHS.MASKS
 
 
 class Mask:

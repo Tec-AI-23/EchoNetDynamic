@@ -1,24 +1,25 @@
 import os
 from PIL import Image
+import torch
 from torch.utils.data import Dataset
 import numpy as np
 
-class EchoDataset(Dataset):
-    def __init__(self, image_dir, mask_dir, transform=None):
-        self.image_dir = image_dir
-        self.mask_dir = mask_dir
+
+class EchoDatasetMasks(Dataset):
+    def __init__(self, images_paths, masks_paths, transform=None):
+        self.images_paths = images_paths
+        self.masks_paths = masks_paths
         self.transform = transform
-        self.images = os.listdir(image_dir)
 
     def __len__(self):
-        return len(self.images)
+        return len(self.images_paths)
 
     def __getitem__(self, index):
-        img_path = os.path.join(self.image_dir, self.images[index])
-        mask_path = os.path.join(self.mask_dir, self.images[index])
+        img_path = self.images_paths[index]
+        masks_path = self.masks_paths[index]
 
         image = np.array(Image.open(img_path).convert("RGB"))
-        mask = np.array(Image.open(mask_path).convert("L"), dtype=np.float32)
+        mask = np.array(Image.open(masks_path), dtype=np.float32)
 
         if self.transform is not None:
             augmentations = self.transform(image=image, mask=mask)
@@ -28,3 +29,28 @@ class EchoDataset(Dataset):
         mask[mask == 255.0] = 1.0
 
         return image, mask
+
+
+class EchoDatasetHeatmap(Dataset):
+    def __init__(self, images_paths, heatmaps_dir, transform=None):
+        self.images_paths = images_paths
+        self.heatmaps_dir = heatmaps_dir
+        self.images = os.listdir(images_paths)
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, index):
+        img_path = os.path.join(self.images_paths, self.images[index])
+        heatmaps_path = os.path.join(self.heatmaps_dir, self.images[index])
+
+        image = np.array(Image.open(img_path).convert("RGB"))
+        heatmap = torch.load(heatmaps_path)
+
+        if self.transform is not None:
+            augmentations = self.transform(image=image, heatmap=heatmap)
+            image = augmentations["image"]
+            heatmap = augmentations["heatmap"]
+
+        return image, heatmap

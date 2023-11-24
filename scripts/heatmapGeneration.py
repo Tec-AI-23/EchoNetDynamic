@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 class HeatmapGeneration:
     def __init__(
         self,
-        path_tensors="../EchoNet-Dynamic/data/heatmaps/",
-        path_masks="../EchoNet-Dynamic/data/masks",
+        path_tensors=FILE_PATHS.HEATMAPS,
+        path_masks=FILE_PATHS.MASKS,
         frame_info=None,
     ):
         self.path_toTensors = path_tensors
