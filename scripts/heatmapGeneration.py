@@ -11,7 +11,7 @@ class HeatmapGeneration:
     def __init__(
         self,
         path_tensors=FILE_PATHS.HEATMAPS,
-        path_masks=FILE_PATHS.MAKS,
+        path_masks=FILE_PATHS.MASKS,
         frame_info=None,
     ):
         self.path_toTensors = path_tensors
