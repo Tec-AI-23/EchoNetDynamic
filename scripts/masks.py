@@ -12,18 +12,18 @@ TRAIN_MASK_DIR = "../data/train_masks/"
 VAL_IMG_DIR = "../data/val_images/"
 VAL_MASK_DIR = "../data/val_masks/"
 """
-VAL_MASK_DIR = FILE_PATHS.MAKS
-
 
 class Mask:
     def __init__(
         self,
         file_info,
+        MASK_DIR,
         amount_of_frames=2,
         files_path="../EchoNet-Dynamic/data/images/",
         images_files_array=[],
     ):
         self.file_info = file_info
+        self.MASK_DIR =MASK_DIR
         self.amount_of_frames = amount_of_frames
         self.path = files_path
         self.images_files_array = images_files_array
@@ -45,7 +45,8 @@ class Mask:
         path = self.path
         file_info = self.file_info
         amount_of_frames = self.amount_of_frames
-
+        MASK_DIR = self.MASK_DIR
+        
         for file in images_files_array:
             path_file = os.path.join(path, file)
             info_file = file_info[file_info.File == file]
@@ -75,7 +76,7 @@ class Mask:
                 output_image = cv2.resize(output_image, (500, 500))
 
             if action == "save":
-                name = os.path.join(VAL_MASK_DIR, file)
+                name = os.path.join(MASK_DIR, file)
                 cv2.imwrite(name, output_image)
 
             else:

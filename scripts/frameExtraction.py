@@ -8,8 +8,8 @@ class FrameExtraction:
     def __init__ (
         self, 
         video_info, 
+        path_save,
         videos_path=FILE_PATHS.VIDEOS, 
-        path_save=FILE_PATHS.IMAGES,
         images_info_path=f'{FILE_PATHS.ECHONET}/images_info.csv'
         ):
 
@@ -49,7 +49,7 @@ class FrameExtraction:
                     cv2.imwrite(path_img, img)
         
         frame_info.to_csv(self.images_info_path, index=False)
-        print('¡Straction Done!')
+        print('¡Extraction Done!')
         print('Path images: ', self.path_save)
         print('Path df: ', self.images_info_path)
         
@@ -67,4 +67,4 @@ class FrameExtraction:
             new_row = {'File': name, 'X': punto[0], 'Y': punto[1]}
             dataframe.loc[len(dataframe)] = new_row
             
-        return dataframe
+        return dataframe        
