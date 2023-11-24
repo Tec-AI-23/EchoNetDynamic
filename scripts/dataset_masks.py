@@ -20,10 +20,6 @@ class EchoDataset(Dataset):
         image = np.array(Image.open(img_path).convert("RGB"))
         mask = np.array(Image.open(mask_path).convert("L"), dtype=np.float32)
 
-        ####mask = np.array(Image.open(mask_path).convert("L"), dtype=np.float32)
-
-        #sigmoid activation function, probabilidad por lo tanto convertimos para que sea correcto 
-
         if self.transform is not None:
             augmentations = self.transform(image=image, mask=mask)
             image = augmentations["image"]
