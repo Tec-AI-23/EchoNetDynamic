@@ -2,8 +2,7 @@ import matplotlib.pyplot as plt
 import torch
 import torchvision
 from dataset_masks import EchoDataset
-
-# from dataset_heatmap import EchoDatasetHeatmap
+from dataset_heatmap import EchoDatasetHeatmap
 from torch.utils.data import DataLoader
 import os
 import cv2
@@ -71,8 +70,10 @@ def get_loaders_landmarks():
 def get_loaders_landmarks(
     train_dir,
     train_maskdir,
+    train_heatmaps,
     val_dir,
     val_maskdir,
+    val_heatmaps,
     batch_size,
     train_transform,
     val_transform,
@@ -82,7 +83,7 @@ def get_loaders_landmarks(
     train_ds = EchoDatasetHeatmap(
         image_dir=train_dir,
         mask_dir=train_maskdir,
-        csv_file="../EchoNet-Dynamic/VolumeTracings.csv",
+        heatmap_dir = train_heatmaps,
         transform=train_transform,
     )
 
@@ -97,7 +98,7 @@ def get_loaders_landmarks(
     val_ds = EchoDatasetHeatmap(
         image_dir=val_dir,
         mask_dir=val_maskdir,
-        csv_file="../EchoNet-Dynamic/VolumeTracings.csv",
+        heatmap_dir = val_heatmaps,
         transform=val_transform,
     )
 
@@ -254,8 +255,9 @@ def save_batch_to_coordinate(t, idx, folder):
         poly = np.array(sorted_points, np.int32)
         cv2.fillPoly(img, [poly], 255)
 
-        # guardar
-        cv2.imwrite(f"{folder}/prueba_batch{idx}_{batch}.png", img)
+        #guardar 
+        folder_creation(f"{folder}/landmark_predictions")
+        cv2.imwrite(f"{folder}/landmark_predictions/prueba_batch{idx}_{batch}.png", img)
 
 
 def heatmap_to_image(t):
