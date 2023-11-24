@@ -22,14 +22,14 @@ class FrameExtraction:
         frame_info = pd.DataFrame(columns=['File', 'X', 'Y'])
         files = os.listdir(self.path)
 
-        for file in files[:2]:
+        for file in files[:256]:
             path_video = os.path.join(self.path, file)
             frames = self.video_info[self.video_info.FileName == file]["Frame"].unique()
             cap = cv2.VideoCapture(path_video)
 
             for frame in frames:
                 landmarks = []
-                name_img = file[:-4] + '_' + str(frame) + '.jpeg'
+                name_img = file[:-4] + '_' + str(frame) + '.png'
                 path_img = os.path.join(self.path_save, name_img)
                 coor = self.video_info[(self.video_info.FileName == file) & (self.video_info.Frame == frame)]
                 puntos1 = [(int(row['X1']), int(row['Y1'])) for index, row in coor.iterrows()]
@@ -59,9 +59,11 @@ class FrameExtraction:
         puntos = []
         puntos.append(landmarks[0])
         puntos.append(landmarks[-1])
-        puntos.append(landmarks[len(landmarks) // 4])
+        puntos.append(landmarks[len(landmarks) // 6])
+        puntos.append(landmarks[len(landmarks) // 3])
         puntos.append(landmarks[len(landmarks) // 2])
-        puntos.append(landmarks[(len(landmarks)*3) // 4])
+        puntos.append(landmarks[len(landmarks)*2 // 3])
+        puntos.append(landmarks[(len(landmarks)*5) // 6])
         
         for punto in puntos:
             new_row = {'File': name, 'X': punto[0], 'Y': punto[1]}
