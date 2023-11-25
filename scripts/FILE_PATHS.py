@@ -5,6 +5,6 @@ VIDEOS = "../EchoNet-Dynamic/videos"
 
 DATA = "../EchoNet-Dynamic/data"
 IMAGES = "../EchoNet-Dynamic/data/images"
-MAKS = "../EchoNet-Dynamic/data/masks"
+MASKS = "../EchoNet-Dynamic/data/masks"
 
 HEATMAPS = "../EchoNet-Dynamic/data/heatmaps"
