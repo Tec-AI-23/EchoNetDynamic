@@ -46,7 +46,8 @@ The next figure shows a fully convolutional network, it assigns a class to each 
 
 ![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/4148ac70-0382-44ec-92a8-cdaabd31c16d)
 
-
+### Mask Approach
+The model will receive the echocardigram image and will return the mask of the left ventricle. The mask is an image that can only take 0's and 1's as values for each pixel. To train the model we will need to create the mask with help of the above mentioned coordinates. Since  
 
 
 [^1]: Nasim, M. A. A., Munem, A. A., Islam, M., Palash, M. A. H., Haque, M. M. A., & Shah, F. M. (2023). Brain tumor segmentation using enhanced u-net model with empirical analysis.
