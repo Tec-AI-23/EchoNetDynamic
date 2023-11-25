@@ -10,3 +10,4 @@ seaborn
 ipython
 tqdm
 albumentations
+torchmetrics
