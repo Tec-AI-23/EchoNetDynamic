@@ -1,0 +1,60 @@
+import os
+from PIL import Image
+import torch
+from torch.utils.data import Dataset
+import numpy as np
+
+
+class EchoDatasetMasks(Dataset):
+    def __init__(self, images_paths, masks_paths, transform=None):
+        self.images_paths = images_paths
+        self.masks_paths = masks_paths
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.images_paths)
+
+    def __getitem__(self, index):
+        img_path = self.images_paths[index]
+        masks_path = self.masks_paths[index]
+
+        image = np.array(Image.open(img_path).convert("RGB"))
+        mask = np.array(Image.open(masks_path).convert("L"), dtype=np.float32)
+
+        if self.transform is not None:
+            augmentations = self.transform(image=image, mask=mask)
+            image = augmentations["image"]
+            mask = augmentations["mask"]
+
+        mask[mask == 255.0] = 1.0
+
+        return image, mask
+
+
+class EchoDatasetHeatmaps(Dataset):
+    def __init__(self, images_paths, heatmaps_paths, masks_paths, transform=None):
+        self.images_paths = images_paths
+        self.heatmaps_paths = heatmaps_paths
+        self.masks_paths = masks_paths
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.images_paths)
+
+    def __getitem__(self, index):
+        img_path = self.images_paths[index]
+        masks_path = self.masks_paths[index]
+        heatmaps_path = self.heatmaps_paths[index]
+
+        image = np.array(Image.open(img_path).convert("RGB"))
+        mask = np.array(Image.open(masks_path).convert("L"), dtype=np.float32)
+        heatmap = torch.load(heatmaps_path)
+
+        if self.transform is not None:
+            augmentations = self.transform(image=image, heatmap=heatmap)
+            image = augmentations["image"]
+            mask = augmentations["mask"]
+
+        mask[mask == 255.0] = 1.0
+
+        return image, heatmap, mask
