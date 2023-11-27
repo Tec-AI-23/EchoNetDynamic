@@ -56,9 +56,26 @@ In this approach, the model will be fed with the original image, and will return
 
 Given the situation that there are objectively no correct landmarks, even if made by a human, this approach becomes complicated. Because by training the model with specific coordinates, the model will consider those to be the only correct landmarks and will correct for others that might be considered different but correct. To avoid this situation, we will give the model a probability map during training to correctly calculate the backpropagation, and thus only correct landmarks that are far away from the edges or key points of the figure.
 
-In order to create a mask, we need at least 3 landmarks. The problem is that the veracity of a 3-point mask would only be a triangle and would not correctly cover the area of the figure, even if the landmarks are correct. On the other hand, increasing the number of landmarks too much, also increases the processing weights of the model algorithm to be trained, increasing the time significantly. So we opted for 7 landmarks because it gives us enough information about the curvatures of the figure and in this way we do not exceed the weights of the model.
+In order to create a mask, we need at least 3 landmarks. The problem is that the veracity of a 3-point mask would only be a triangle and would not correctly cover the area of the figure, even if the landmarks are correct. On the other hand, increasing the number of landmarks too much, also increases the processing weights of the model algorithm to be trained, increasing the time significantly. So we opted for 7 landmarks because it gives us enough information about the curvatures of the figure and in this way we do not exceed the weights of the model, but this doesn't mean that this is really the optimal number.
+
 ![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/5873eb09-fd0e-4cd2-a184-dbc60a58be37)
 ![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/7622f0c8-1e5d-413d-892b-a6110184c8c1)
+
+## Experiments
+Below we will show you in detail some of the problems we faced during the development of this project.
+
+### Mask extraction methods
+As explained above, we had to create the masks ourselves from a set of coordinates. To address this, we experimented with 3 methods to make the masks, but all of them were implemented with the OpenCV function, "fillPoly". This function requires as parameters, the image where the polygon will be drawn, the points of the polygon (in this case, our coordinates), and the color.
+
+The problem is that the coordinates were not sorted, so if we entered the set of coordinates as we received it, we obtained different types of figures that did not work as masks. So we had to experiment with how we sorted the points. The following are the methods we used.
+
+**Simple Sort Method:** Using "sorted" Python function, which takes an iterable and returns it, but sorted in ascending or descending order.
+
+**Centroid Method:** Calculating the mean between all the points, we created a centroid. Using that centroid and the "arctan2" Numpy function, we created a sorted array.
+
+**Convex Hull Method:** Using the OpenCV function, "convexHull", which scans the array of coordinates using the Sklansky algorithm and sorts them.
+
+### Heat maps methods
 
 
 
