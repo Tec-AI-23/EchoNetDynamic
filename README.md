@@ -1,3 +1,59 @@
+### [Jump to theortical background](#left-ventricle-automatic-segmentation-with-deep-learning-on-the-echonet-dynamic-dataset)
+
+## Pre-requisites
+
+Make sure to have a Python version between >=3.7,<3.11. **PyTorch does not work on 3.1!**
+
+We recommend 3.11.
+
+## Dependencies installation
+
+Initialize a Python virtual environment (venv) according to your respective os. Make sure the venv folder is called `.venv`.
+
+### Windows:
+
+#### Create venv
+```sh
+python -m venv .\.venv
+```
+
+If multiple Python versions are installed, it is helpful to use:
+```sh
+py -3.11 -m venv .\.venv
+```
+
+Change `-3.11` with the desired version.
+
+#### Start venv
+```sh
+.venv\Scripts\activate
+```
+
+### Linux:
+
+#### Create venv
+```sh
+python3.11 -m venv .venv
+```
+Change `python3.11` with the desired version.
+
+#### Start venv
+```sh
+source .venv/bin/activate
+```
+## Install dependencies
+
+Run:
+```sh
+pip install -r requirements.txt
+```
+
+To further add new dependencies first write down the name of the dependency on the file `PACKAGES_NAMES.txt`. Make sure to leave a blank line at the end of it.
+
+Then, run the script `requirements_generator.py`, which fetches the latest stable versions of each dependency from the `pip` website and then with each fetched version it writes the `requirements.txt` file.
+
+However, if a certain version that is not the latest is needed, **DO NOT RUN `requirements_generator.py`**!
+
 # Left Ventricle Automatic Segmentation with Deep Learning on the EchoNet Dynamic Dataset
 
 #### Team Members
