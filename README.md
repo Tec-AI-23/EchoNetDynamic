@@ -76,8 +76,20 @@ The problem is that the coordinates were not sorted, so if we entered the set of
 - **Convex Hull Method:** Using the OpenCV function, "convexHull", which scans the array of coordinates using the Sklansky algorithm and sorts them.
 
 ### Heat maps methods
+The landmark approximation required us to formulate the best possible heat map, so we had to try different methods.
 
+- **Pixel expansion:** In order to make the network predict the landmark close to the given one, the acceptable area should be narrowed down. To make that possible, the pixels given by the dataset are "expanded" so that their size is greater than only the one pixel they initially represent.
 
+- **Border limits:** We needed the model to be able to differentiate between a point close to the given landmark but outside the ventricle border and one inside the ventricle border. So we had to delimit the edges so that it would not predict outside that area. To do this, we use two morphological operations from the OpenCV library: erosion and dilation. Erosion is a filter that given a pixel, analyzes the value of n-number of pixels around it, if the value of all those pixels around it is 1, then the given central pixel will also be 1, otherwise, it will be 0. Dilation is a filter that works similar to erosion, but it will only give 0 to the given central pixel if the pixels around it are also 0, otherwise, it will be 1. So what these two operations help us with is that dilation makes the area of the mask grow, and erosion makes the area shrink, and with an XOR operation we compare them and get a final image that gives us the outline.
+
+- **Euclidean distance:** We calculate the Euclidean distance between the given landmarks and the rest of the pixels in the image. Each landmark gives us a map that we multiply to the previous map given by pixel expansion and border limits. In this way, the resulting map only decreases gradually in the areas near the given landmarks and the edge of the figure.
+
+$$Euc = \sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2}$$
+
+- **Gaussian distribution:** With the "gaussian" function of the Scikit-Image library and apply a Gaussian filter, which given a specific area, marks the central pixel as the highest value and as it moves away from the center, it takes lower and lower values, creating a Gaussian distribution. Once given the map, we multiply again with the previous maps and finally define correctly the area in which the model can predict the landmarks.
+
+### Optimal landmarks
+As mentioned earlier, the number of landmarks is something we have to consider because of the computational processing required. With this in mind, we wanted to determine the most important landmarks to keep the mask quality, no matter the number of landmarks. The method we used was to calculate the angle between one landmark, the past one, and the next one. The landmarks with smaller angles are the most important ones, and as the angle is closer to 180° it can be ignored without losing important information. 
 
 [^1]: Nasim, M. A. A., Munem, A. A., Islam, M., Palash, M. A. H., Haque, M. M. A., & Shah, F. M. (2023). Brain tumor segmentation using enhanced u-net model with empirical analysis.
 [^2]: Long, J., Shelhamer, E., & Darrell, T. (2015, June). Fully convolutional net-works for semantic segmentation. In Proceedings of the ieee conference on computer vision and pattern recognition (cvpr).
