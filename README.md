@@ -1,4 +1,4 @@
-### [Jump to theortical background](#left-ventricle-automatic-segmentation-with-deep-learning-on-the-echonet-dynamic-dataset)
+### [↴ Jump to theortical background](#left-ventricle-automatic-segmentation-with-deep-learning-on-the-echonet-dynamic-dataset)
 
 ## Pre-requisites
 
@@ -48,7 +48,11 @@ Run:
 pip install -r requirements.txt
 ```
 
+### Add new dependencies 
+
 To further add new dependencies first write down the name of the dependency on the file `PACKAGES_NAMES.txt`. Make sure to leave a blank line at the end of it.
+
+Install `requests`: `pip install requests`.
 
 Then, run the script `requirements_generator.py`, which fetches the latest stable versions of each dependency from the `pip` website and then with each fetched version it writes the `requirements.txt` file.
 
