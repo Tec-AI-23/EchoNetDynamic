@@ -47,7 +47,18 @@ The next figure shows a fully convolutional network, it assigns a class to each 
 ![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/4148ac70-0382-44ec-92a8-cdaabd31c16d)
 
 ### Mask Approach
-The model will receive the echocardigram image and will return the mask of the left ventricle. The mask is an image that can only take 0's and 1's as values for each pixel. To train the model we will need to create the mask with help of the above mentioned coordinates. Since  
+The model will receive the echocardigram image and will return the mask of the left ventricle. The mask is an image that can only take 0's and 1's as values for each pixel. To train the model we will need to create the mask with help of the above mentioned coordinates. Since the predicted masks need to be compared with the actual masks, we will use the Dice Score formula. Which compares every pixel of both images and return a number value between 0 and 1, the closer to 1, the better the mask.
+
+$$Dice = \frac{2 * |X \cap Y|}{|X|+|Y|}$$
+
+### Landmark approach
+In this approach, the model will be fed with the original image, and will return a tensor as a probability map of which pixels could be a landmark. Landmarks are key points in the shape of the image we want to identify. The way to identify these landmarks depends on the problem, but the goal is that a set of landmarks can cover as much as possible the area to be identified.
+Given the situation that there are objectively no correct landmarks, even if made by a human, this approach becomes complicated. Because by training the model with specific coordinates, the model will consider those to be the only correct landmarks and will correct for others that might be considered different but correct. To avoid this situation, we will give the model a probability map during training to correctly calculate the backpropagation, and thus only correct landmarks that are far away from the edges or key points of the figure.
+In order to create a mask, we need at least 3 landmarks. The problem is that the veracity of a 3-point mask would only be a triangle and would not correctly cover the area of the figure, even if the landmarks are correct. On the other hand, increasing the number of landmarks too much, also increases the processing weights of the model algorithm to be trained, increasing the time significantly. So we opted for 7 landmarks because it gives us enough information about the curvatures of the figure and in this way we do not exceed the weights of the model.
+
+![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/5873eb09-fd0e-4cd2-a184-dbc60a58be37)
+![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/7622f0c8-1e5d-413d-892b-a6110184c8c1)
+
 
 
 [^1]: Nasim, M. A. A., Munem, A. A., Islam, M., Palash, M. A. H., Haque, M. M. A., & Shah, F. M. (2023). Brain tumor segmentation using enhanced u-net model with empirical analysis.
