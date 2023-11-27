@@ -63,6 +63,9 @@ def get_loaders_masks(
     return train_loader, val_loader
 
 
+def get_loaders_landmarks():
+    pass
+
 
 def get_loaders_landmarks(
     train_dir,
@@ -110,7 +113,7 @@ def get_loaders_landmarks(
     return train_loader, val_loader
 
 
-def check_accuracy(loader, model,model_type, device="cuda" ):
+def check_accuracy(loader, model, model_type, device="cuda"):
     num_correct = 0
     num_pixels = 0
     dice_score = 0
@@ -126,9 +129,8 @@ def check_accuracy(loader, model,model_type, device="cuda" ):
                 num_correct += (preds == y).sum()
                 num_pixels += torch.numel(preds)
                 dice = Dice().to(device)
-                preds, y =preds.int(), y.int()
-                dice_score += dice(preds,y)
-
+                preds, y = preds.int(), y.int()
+                dice_score += dice(preds, y)
 
         print(
             f"Got {num_correct}/{num_pixels} with acc {num_correct/num_pixels*100:.2f}"
@@ -138,20 +140,18 @@ def check_accuracy(loader, model,model_type, device="cuda" ):
 
     elif model_type == "landmarks":
         with torch.no_grad():
-            for x,z, y in loader:
-
+            for x, z, y in loader:
                 x = x.to(device)
                 y = y.to(device).unsqueeze(1)
 
                 preds = model(x)
-                #convert heatmap to image
+                # convert heatmap to image
                 preds = heatmap_to_image(preds).to(device)
                 num_correct += (preds == y).sum()
                 num_pixels += torch.numel(preds)
                 dice = Dice().to(device)
-                preds, y =preds.int(), y.int()
-                dice_score += dice(preds,y)
-
+                preds, y = preds.int(), y.int()
+                dice_score += dice(preds, y)
 
         print(
             f"Got {num_correct}/{num_pixels} with acc {num_correct/num_pixels*100:.2f}"
@@ -170,62 +170,65 @@ def folder_creation(folder):
 def save_predictions_as_imgs(
     loader, model, model_type, folder="saved_images/", device="cuda"
 ):
-
     folder_creation(folder)
     model.eval()
     if model_type == "masks":
-
         for idx, (x, y) in enumerate(loader):
             x = x.to(device=device)
             with torch.no_grad():
                 preds = torch.sigmoid(model(x))
                 preds = (preds >= 0.5).float()
-                #save masks predictions as image
+                # save masks predictions as image
                 folder_creation(f"{folder}/masks_predictions")
                 for prediction in range(preds.shape[0]):
-                    torchvision.utils.save_image(preds[prediction], f"{folder}/masks_predictions/batch_{idx}_no{prediction}.png")
+                    torchvision.utils.save_image(
+                        preds[prediction],
+                        f"{folder}/masks_predictions/batch_{idx}_no{prediction}.png",
+                    )
 
-                #Saving original masks as individual images
+                # Saving original masks as individual images
                 folder_creation(f"{folder}/original_masks")
 
                 y[y == 1] = 255
                 for mask in range(y.shape[0]):
-                    torchvision.utils.save_image(y[mask], f"{folder}/original_masks/batch{idx}_no{mask}.png")
+                    torchvision.utils.save_image(
+                        y[mask], f"{folder}/original_masks/batch{idx}_no{mask}.png"
+                    )
 
-                    #cv2.imwrite(f"{folder}/original_masks/batch{idx}_no{mask}.png", y[mask].numpy())
+                    # cv2.imwrite(f"{folder}/original_masks/batch{idx}_no{mask}.png", y[mask].numpy())
 
-                
                 # #Saving the masks as batch
                 # torchvision.utils.save_image(y, f"{folder}/{idx}.png")
-    
 
     elif model_type == "landmarks":
-        for idx, (x,z, y) in enumerate(loader):
+        for idx, (x, z, y) in enumerate(loader):
             x = x.to(device=device)
             with torch.no_grad():
                 preds = torch.sigmoid(model(x))
-        #save heatmaps predictions as images, individually
-        save_batch_to_coordinate(preds,idx, folder)
+        # save heatmaps predictions as images, individually
+        save_batch_to_coordinate(preds, idx, folder)
 
-        #Saving original masks as individual images
+        # Saving original masks as individual images
         folder_creation(f"{folder}/original_masks")
 
         y[y == 1] = 255
         for mask in range(y.shape[0]):
-            torchvision.utils.save_image(y[mask], f"{folder}/original_masks/batch{idx}_no{mask}.png")
-
+            torchvision.utils.save_image(
+                y[mask], f"{folder}/original_masks/batch{idx}_no{mask}.png"
+            )
 
         # #Saving original images as individual images
         # for imagen in range(y.shape[0]):
         #     #cv2.imwrite(f"{folder}/image{idx}_{imagen}.png", x[imagen].permute(1,2,0).to("cpu").numpy())
         #     torchvision.utils.save_image(x[imagen], f"{folder}/image{idx}_{imagen}.png")
 
-        #saving original images as batch
-        #torchvision.utils.save_image(x, f"{folder}/image{idx}.png")
+        # saving original images as batch
+        # torchvision.utils.save_image(x, f"{folder}/image{idx}.png")
 
     model.train()
 
-def unravel_index(indices,shape):
+
+def unravel_index(indices, shape):
     shape = torch.tensor(shape)
     indices = indices % shape.prod()  # prevent out-of-bounds indices
 
@@ -237,14 +240,15 @@ def unravel_index(indices,shape):
 
     return coord.flip(-1)
 
-def save_batch_to_coordinate(t,idx, folder):   
+
+def save_batch_to_coordinate(t, idx, folder):
     for batch in range(t.shape[0]):
         img = np.zeros(t.shape[2:], dtype=np.uint8)
         coor = []
         for i in range(t.shape[1]):
             coordenada = unravel_index(t[batch][i].argmax(), t.shape[2:])
             coor.append(coordenada)
-        points =np.array(coor)
+        points = np.array(coor)
         centroid = np.mean(points, axis=0)
         angles = np.arctan2(points[:, 1] - centroid[1], points[:, 0] - centroid[0])
         sorted_points = points[np.argsort(angles)]
@@ -255,24 +259,26 @@ def save_batch_to_coordinate(t,idx, folder):
         folder_creation(f"{folder}/landmark_predictions")
         cv2.imwrite(f"{folder}/landmark_predictions/prueba_batch{idx}_{batch}.png", img)
 
-def heatmap_to_image(t):
-        masks= torch.tensor([])
-        for batch in range(t.shape[0]):
-            img = np.zeros(t.shape[2:], dtype=np.uint8)
-            coor = []
-            for i in range(t.shape[1]):
-                coordenada = unravel_index(t[batch][i].argmax(), t.shape[2:])
-                coor.append(coordenada)
-            points =np.array(coor)
-            centroid = np.mean(points, axis=0)
-            angles = np.arctan2(points[:, 1] - centroid[1], points[:, 0] - centroid[0])
-            sorted_points = points[np.argsort(angles)]
-            poly = np.array(sorted_points, np.int32)
-            cv2.fillPoly(img, [poly], 255)
 
-            mask = torch.from_numpy(img).unsqueeze(0).unsqueeze(0)
-            masks=torch.cat((masks,mask))
-        return masks
+def heatmap_to_image(t):
+    masks = torch.tensor([])
+    for batch in range(t.shape[0]):
+        img = np.zeros(t.shape[2:], dtype=np.uint8)
+        coor = []
+        for i in range(t.shape[1]):
+            coordenada = unravel_index(t[batch][i].argmax(), t.shape[2:])
+            coor.append(coordenada)
+        points = np.array(coor)
+        centroid = np.mean(points, axis=0)
+        angles = np.arctan2(points[:, 1] - centroid[1], points[:, 0] - centroid[0])
+        sorted_points = points[np.argsort(angles)]
+        poly = np.array(sorted_points, np.int32)
+        cv2.fillPoly(img, [poly], 255)
+
+        mask = torch.from_numpy(img).unsqueeze(0).unsqueeze(0)
+        masks = torch.cat((masks, mask))
+    return masks
+
 
 def train_fn(loader, model, optimizer, loss_fn, scaler, DEVICE, model_type):
     loop = tqdm(loader)
@@ -282,14 +288,14 @@ def train_fn(loader, model, optimizer, loss_fn, scaler, DEVICE, model_type):
             data = data.to(device=DEVICE)
             targets = targets.float().to(device=DEVICE)
 
-            #if model is mask, target need color dimension
+            # if model is mask, target need color dimension
             if len(targets.shape) != len(data.shape):
-                targets=targets.unsqueeze(1)
-            
+                targets = targets.unsqueeze(1)
+
             # forward
             with torch.cuda.amp.autocast():
                 predictions = model(data)
-                
+
                 loss = loss_fn(predictions, targets)
             # backward
             optimizer.zero_grad()
@@ -305,14 +311,14 @@ def train_fn(loader, model, optimizer, loss_fn, scaler, DEVICE, model_type):
             data = data.to(device=DEVICE)
             targets = targets.float().to(device=DEVICE)
 
-            #if model is mask, target need color dimension
+            # if model is mask, target need color dimension
             if len(targets.shape) != len(data.shape):
-                targets=targets.unsqueeze(1)
-            
+                targets = targets.unsqueeze(1)
+
             # forward
             with torch.cuda.amp.autocast():
                 predictions = model(data)
-                
+
                 loss = loss_fn(predictions, targets)
             # backward
             optimizer.zero_grad()

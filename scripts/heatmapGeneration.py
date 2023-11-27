@@ -10,8 +10,8 @@ import FILE_PATHS
 class HeatmapGeneration:
     def __init__(
         self,
-        path_tensors,
-        path_masks,
+        path_tensors=FILE_PATHS.HEATMAPS,
+        path_masks=FILE_PATHS.MASKS,
         frame_info=None,
     ):
         self.path_toTensors = path_tensors
@@ -26,6 +26,7 @@ class HeatmapGeneration:
         save_as_tensor=True,
         radius=10,
         show=False,
+        num_lands=5
     ):
         files = self.frame_info["File"].unique()
         kernel = np.ones(kernel_shape, np.uint8)
@@ -33,21 +34,23 @@ class HeatmapGeneration:
         for file in files:
             path_mask = os.path.join(self.path_masks, file)
             path_tensor = ""
-            coor = self.frame_info[self.frame_info.File == file]
-            puntos = [(row["X"], row["Y"]) for index, row in coor.iterrows()]
-
+            coor_df = self.frame_info[self.frame_info.File == file]
+            coors = [(row["X"], row["Y"]) for index, row in coor_df.iterrows()]
+            optimal_landmarks = self.optimal_lands(coors, num_lands)
+            
             contour = self.getContour(path_mask, morphological_iterations, kernel)
-            result_img = np.zeros(contour.shape[:2] + (len(puntos),), dtype=np.uint8)
+            result_img = np.zeros(contour.shape[:2] + (len(optimal_landmarks),), dtype=np.uint8)
             area_pixel = np.zeros(contour.shape[:2], dtype=np.uint8)
 
             fig, axs = None, None
             if show:
-                fig, axs = plt.subplots(1, len(puntos), figsize=(20, 20))
+                fig, axs = plt.subplots(1, len(optimal_landmarks), figsize=(20, 20))
+            
 
             result_heatmap = []
-            for i in range(len(puntos)):
-                coor_x = puntos[i][0]
-                coor_y = puntos[i][1]
+            for i in range(len(optimal_landmarks)):
+                coor_x = optimal_landmarks[i][0]
+                coor_y = optimal_landmarks[i][1]
 
                 if distribution == "Euclidean":
                     path_tensor = os.path.join(self.path_toTensors, "euclidean")
@@ -58,6 +61,7 @@ class HeatmapGeneration:
                     result_img[:, :, i] = heatmap
                     result_heatmap.append(heatmap)
                     if show:
+                        axs[i].set_title('(' + str(coor_x) + ',' +str(coor_y) + ')')
                         axs[i].imshow(heatmap)
                         axs[i].axis("off")
 
@@ -70,6 +74,7 @@ class HeatmapGeneration:
                     result_img[:, :, i] = heatmap
                     result_heatmap.append(heatmap)
                     if show:
+                        axs[i].set_title('(' + str(coor_x) + ',' +str(coor_y) + ')')
                         axs[i].imshow(heatmap)
                         axs[i].axis("off")
 
@@ -112,7 +117,7 @@ class HeatmapGeneration:
         result = (matrix - min_value) / (max_value - min_value)
         result = np.clip(result, 0, None)
         return result
-
+    
     def getContour(self, path_mask, iterations, kernel):
         mask = cv.imread(path_mask)
         dilated_img = cv.dilate(mask, kernel, iterations=iterations)
@@ -121,3 +126,32 @@ class HeatmapGeneration:
         _, contour = cv.threshold(contour, 200, 255, cv.THRESH_BINARY)
         contour = contour[:, :, 0] / 255.0
         return contour
+    
+    def optimal_lands(self, sorted_points, num_lands):
+        angles = []
+        landmark = []
+        
+        for i in range(len(sorted_points)):
+            a = sorted_points[i-1]
+            b = sorted_points[i]
+            c = 0
+            
+            if i == len(sorted_points) - 1:
+                c = sorted_points[0]
+            else:
+                c = sorted_points[i+1]
+            
+            ba = (a[0] - b[0], a[1] - b[1])
+            bc = (c[0] - b[0], c[1] - b[1])
+            
+            result = np.clip(((ba[0] * bc[0]) + (ba[1] * bc[1])) / ((np.sqrt(ba[0]**2 + ba[1]**2)) * (np.sqrt(bc[0]**2 + bc[1]**2))), -1, 1)
+            angle = np.arccos(result)
+            
+            angle = round(angle, 6)
+            angles.append(angle)
+            landmark.append(b)
+            
+        sorted_index = np.argsort(angles)
+        optimal_lands = [sorted_points[i] for i in sorted_index]
+
+        return optimal_lands[:num_lands]
