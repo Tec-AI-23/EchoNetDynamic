@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 import torchvision
-from dataset_masks import EchoDataset
-from dataset_heatmap import EchoDatasetHeatmap
+from dataset import EchoDatasetHeatmaps, EchoDatasetMasks
 from torch.utils.data import DataLoader
 import os
 import cv2
@@ -83,7 +82,7 @@ def get_loaders_landmarks(
     train_ds = EchoDatasetHeatmap(
         image_dir=train_dir,
         mask_dir=train_maskdir,
-        heatmap_dir = train_heatmaps,
+        heatmap_dir=train_heatmaps,
         transform=train_transform,
     )
 
@@ -98,7 +97,7 @@ def get_loaders_landmarks(
     val_ds = EchoDatasetHeatmap(
         image_dir=val_dir,
         mask_dir=val_maskdir,
-        heatmap_dir = val_heatmaps,
+        heatmap_dir=val_heatmaps,
         transform=val_transform,
     )
 
@@ -255,7 +254,7 @@ def save_batch_to_coordinate(t, idx, folder):
         poly = np.array(sorted_points, np.int32)
         cv2.fillPoly(img, [poly], 255)
 
-        #guardar 
+        # guardar
         folder_creation(f"{folder}/landmark_predictions")
         cv2.imwrite(f"{folder}/landmark_predictions/prueba_batch{idx}_{batch}.png", img)
 
@@ -282,9 +281,11 @@ def heatmap_to_image(t):
 
 def train_fn(loader, model, optimizer, loss_fn, scaler, DEVICE, model_type):
     loop = tqdm(loader)
-
+    print(loop)
     if model_type == "masks":
         for batch_idx, (data, targets) in enumerate(loop):
+            print(loop[data], loop[targets])
+
             data = data.to(device=DEVICE)
             targets = targets.float().to(device=DEVICE)
 

@@ -5,7 +5,7 @@ import numpy as np
 import pixel_expand
 from skimage.filters import gaussian
 import matplotlib.pyplot as plt
-
+import FILE_PATHS
 
 class HeatmapGeneration:
     def __init__(
