@@ -69,11 +69,11 @@ As explained above, we had to create the masks ourselves from a set of coordinat
 
 The problem is that the coordinates were not sorted, so if we entered the set of coordinates as we received it, we obtained different types of figures that did not work as masks. So we had to experiment with how we sorted the points. The following are the methods we used.
 
-**Simple Sort Method:** Using "sorted" Python function, which takes an iterable and returns it, but sorted in ascending or descending order.
+- **Simple Sort Method:** Using "sorted" Python function, which takes an iterable and returns it, but sorted in ascending or descending order.
 
-**Centroid Method:** Calculating the mean between all the points, we created a centroid. Using that centroid and the "arctan2" Numpy function, we created a sorted array.
+- **Centroid Method:** Calculating the mean between all the points, we created a centroid. Using that centroid and the "arctan2" Numpy function, we created a sorted array.
 
-**Convex Hull Method:** Using the OpenCV function, "convexHull", which scans the array of coordinates using the Sklansky algorithm and sorts them.
+- **Convex Hull Method:** Using the OpenCV function, "convexHull", which scans the array of coordinates using the Sklansky algorithm and sorts them.
 
 ### Heat maps methods
 
