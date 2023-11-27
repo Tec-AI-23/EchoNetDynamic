@@ -11,6 +11,7 @@ class EchoDatasetHeatmap(Dataset):
     ):
         self.image_dir = image_dir
         self.mask_dir = mask_dir
+        self.mask_dir = mask_dir
         self.heatmap_dir = heatmap_dir
         self.transform = transform
         self.images = os.listdir(image_dir)
@@ -19,7 +20,6 @@ class EchoDatasetHeatmap(Dataset):
 
     def __len__(self):
         return len(self.images)
-
     def __getitem__(self, index):
         img_path = os.path.join(self.image_dir, self.images[index])
         mask_path = os.path.join(self.mask_dir, self.images[index])
