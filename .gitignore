@@ -19,3 +19,5 @@ data
 __pycache__/
  *.py[cod]
  *.pyc
+
+/.venv
