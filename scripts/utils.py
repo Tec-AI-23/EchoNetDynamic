@@ -120,7 +120,10 @@ def check_accuracy(loader, model, model_type, device="cuda"):
 
     if model_type == "masks":
         with torch.no_grad():
-            for x, y in loader:
+            for data_dir in loader:
+                x = data_dir["image"]["data"]
+                y = data_dir["mask"]["data"]
+                
                 x = x.to(device)
                 y = y.to(device).unsqueeze(1)
                 preds = torch.sigmoid(model(x))
@@ -281,12 +284,13 @@ def heatmap_to_image(t):
 
 def train_fn(loader, model, optimizer, loss_fn, scaler, DEVICE, model_type):
     loop = tqdm(loader)
-    print(loop)
-    if model_type == "masks":
-        for batch_idx, (data, targets) in enumerate(loop):
-            print(loop[data], loop[targets])
 
+    if model_type == "masks":
+        for batch_idx, data_dir in enumerate(loop):
+            data = data_dir["image"]["data"]
             data = data.to(device=DEVICE)
+
+            targets = data_dir["mask"]["data"]
             targets = targets.float().to(device=DEVICE)
 
             # if model is mask, target need color dimension
