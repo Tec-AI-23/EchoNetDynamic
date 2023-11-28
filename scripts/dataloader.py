@@ -76,7 +76,7 @@ def get_loaders_heatmaps(
     mask_paths = [os.path.join(masks_dir, mask) for mask in os.listdir(masks_dir)][:32]
     heatmap_paths = [
         os.path.join(heatmaps_dir, heatmap) for heatmap in os.listdir(heatmaps_dir)
-    ]
+    ][:32]
 
     (
         train_image_paths,
