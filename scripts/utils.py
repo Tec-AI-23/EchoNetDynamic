@@ -10,7 +10,7 @@ from torchmetrics.classification import Dice
 from tqdm import tqdm
 
 
-def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
+def save_checkpoint(state, filename):
     print("=> Saving checkpoint")
     torch.save(state, filename)
 
@@ -82,7 +82,7 @@ def folder_creation(folder):
 
 
 def save_predictions_as_imgs(
-    loader, model, model_type, folder="saved_images/", device="cuda"
+    loader, model, model_type="masks", folder="saved_images/", device="cuda"
 ):
     folder_creation(folder)
     model.eval()
