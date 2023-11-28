@@ -20,98 +20,6 @@ def load_checkpoint(checkpoint, model):
     model.load_state_dict(checkpoint["state_dict"])
 
 
-def get_loaders_masks(
-    train_dir,
-    train_maskdir,
-    val_dir,
-    val_maskdir,
-    batch_size,
-    train_transform,
-    val_transform,
-    num_workers=4,
-    pin_memory=True,
-):
-    train_ds = EchoDataset(
-        image_dir=train_dir,
-        mask_dir=train_maskdir,
-        transform=train_transform,
-    )
-
-    train_loader = DataLoader(
-        train_ds,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
-        shuffle=True,
-    )
-
-    val_ds = EchoDataset(
-        image_dir=val_dir,
-        mask_dir=val_maskdir,
-        transform=val_transform,
-    )
-
-    val_loader = DataLoader(
-        val_ds,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
-        shuffle=False,
-    )
-
-    return train_loader, val_loader
-
-
-def get_loaders_landmarks():
-    pass
-
-
-def get_loaders_landmarks(
-    train_dir,
-    train_maskdir,
-    train_heatmaps,
-    val_dir,
-    val_maskdir,
-    val_heatmaps,
-    batch_size,
-    train_transform,
-    val_transform,
-    num_workers=4,
-    pin_memory=True,
-):
-    train_ds = EchoDatasetHeatmap(
-        image_dir=train_dir,
-        mask_dir=train_maskdir,
-        heatmap_dir=train_heatmaps,
-        transform=train_transform,
-    )
-
-    train_loader = DataLoader(
-        train_ds,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
-        shuffle=True,
-    )
-
-    val_ds = EchoDatasetHeatmap(
-        image_dir=val_dir,
-        mask_dir=val_maskdir,
-        heatmap_dir=val_heatmaps,
-        transform=val_transform,
-    )
-
-    val_loader = DataLoader(
-        val_ds,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
-        shuffle=False,
-    )
-
-    return train_loader, val_loader
-
-
 def check_accuracy(loader, model, model_type, device="cuda"):
     num_correct = 0
     num_pixels = 0
@@ -120,10 +28,10 @@ def check_accuracy(loader, model, model_type, device="cuda"):
 
     if model_type == "masks":
         with torch.no_grad():
-            for data_dir in loader:
-                x = data_dir["image"]["data"]
-                y = data_dir["mask"]["data"]
-                
+            for data_dict in loader:
+                x = data_dict["image"]["data"]
+                y = data_dict["mask"]["data"]
+
                 x = x.to(device)
                 y = y.to(device).unsqueeze(1)
                 preds = torch.sigmoid(model(x))
@@ -142,7 +50,11 @@ def check_accuracy(loader, model, model_type, device="cuda"):
 
     elif model_type == "landmarks":
         with torch.no_grad():
-            for x, z, y in loader:
+            for data_dict in loader:
+                x = data_dict["image"]["data"]
+                z = data_dict["heatmap"]["data"]
+                y = data_dict["mask"]["data"]
+
                 x = x.to(device)
                 y = y.to(device).unsqueeze(1)
 
@@ -175,7 +87,10 @@ def save_predictions_as_imgs(
     folder_creation(folder)
     model.eval()
     if model_type == "masks":
-        for idx, (x, y) in enumerate(loader):
+        for idx, data_dict in enumerate(loader):
+            x = data_dict["image"]["data"]
+            y = data_dict["mask"]["data"]
+
             x = x.to(device=device)
             with torch.no_grad():
                 preds = torch.sigmoid(model(x))
@@ -203,7 +118,11 @@ def save_predictions_as_imgs(
                 # torchvision.utils.save_image(y, f"{folder}/{idx}.png")
 
     elif model_type == "landmarks":
-        for idx, (x, z, y) in enumerate(loader):
+        for idx, data_dict in enumerate(loader):
+            x = data_dict["image"]["data"]
+            z = data_dict["heatmap"]["data"]
+            y = data_dict["mask"]["data"]
+
             x = x.to(device=device)
             with torch.no_grad():
                 preds = torch.sigmoid(model(x))
@@ -286,11 +205,11 @@ def train_fn(loader, model, optimizer, loss_fn, scaler, DEVICE, model_type):
     loop = tqdm(loader)
 
     if model_type == "masks":
-        for batch_idx, data_dir in enumerate(loop):
-            data = data_dir["image"]["data"]
+        for batch_idx, data_dict in enumerate(loop):
+            data = data_dict["image"]["data"]
             data = data.to(device=DEVICE)
 
-            targets = data_dir["mask"]["data"]
+            targets = data_dict["mask"]["data"]
             targets = targets.float().to(device=DEVICE)
 
             # if model is mask, target need color dimension
@@ -312,7 +231,10 @@ def train_fn(loader, model, optimizer, loss_fn, scaler, DEVICE, model_type):
             loop.set_postfix(loss=loss.item())
 
     elif model_type == "landmarks":
-        for batch_idx, (data, targets, masks) in enumerate(loop):
+        for batch_idx, data_dict in enumerate(loop):
+            data = data_dict["image"]["data"]
+            targets = data_dict["heatmap"]["data"]
+
             data = data.to(device=DEVICE)
             targets = targets.float().to(device=DEVICE)
 
