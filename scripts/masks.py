@@ -39,7 +39,7 @@ class Mask:
         show_centroid=False,
         include_points=False,
         include_base_image=False,
-        resize_touple=(0, 0)
+        resize_touple=(0, 0),
     ):
         images_files_array = self.images_files_array
         path = self.path
@@ -111,7 +111,7 @@ class Mask:
             else:
                 img = np.zeros(img.shape[:2], dtype=np.uint8)
                 cv2.fillPoly(img, [poly], 255)
-                
+
         return img
 
     def convex(self, cordinates, cap, include_base_image=False):

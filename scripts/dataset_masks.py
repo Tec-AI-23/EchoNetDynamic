@@ -18,8 +18,13 @@ class EchoDatasetMasks(Dataset):
         return len(self.images_paths)
 
     def __getitem__(self, index):
+<<<<<<<< HEAD:scripts/dataset_masks.py
+        img_path = os.path.join(self.image_dir, self.images[index])
+        mask_path = os.path.join(self.mask_dir, self.images[index])
+========
         img_path = self.images_paths[index]
         mask_path = self.masks_paths[index]
+>>>>>>>> 57f3eef1295fd6acfa9ac6fdb57e115037661210:scripts/dataset.py
 
         image = np.array(Image.open(img_path).convert("RGB"))
         mask = np.array(Image.open(mask_path).convert("L"), dtype=np.float32)
@@ -31,6 +36,9 @@ class EchoDatasetMasks(Dataset):
 
         mask[mask == 255.0] = 1.0
 
+<<<<<<<< HEAD:scripts/dataset_masks.py
+        return image, mask
+========
         image_data = generate_data_dict(image, img_path)
         mask_data = generate_data_dict(mask, mask_path)
 
@@ -67,3 +75,4 @@ class EchoDatasetHeatmaps(Dataset):
         mask_data = generate_data_dict(mask, mask_path)
         heatmap_data = generate_data_dict(heatmap, heatmap_path)
         return {"image": image_data, "heatmap": heatmap_data, "mask": mask_data}
+>>>>>>>> 57f3eef1295fd6acfa9ac6fdb57e115037661210:scripts/dataset.py
