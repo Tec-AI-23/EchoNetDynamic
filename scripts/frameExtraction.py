@@ -22,25 +22,26 @@ class FrameExtraction:
         frame_info = pd.DataFrame(columns=["File", "X", "Y"])
         files = os.listdir(self.path)
 
-        for file in files:
+        for file in files[:2]:
             path_video = os.path.join(self.path, file)
             frames = self.video_info[self.video_info.FileName == file]["Frame"].unique()
             cap = cv2.VideoCapture(path_video)
 
             for frame in frames:
                 landmarks = []
-                name_img = file[:-4] + "_" + str(frame) + ".png"
+                name_img = f"{file[:-4]}_{frame}.png"
                 path_img = os.path.join(self.path_save, name_img)
                 coor = self.video_info[
                     (self.video_info.FileName == file)
                     & (self.video_info.Frame == frame)
                 ]
-                puntos1 = [
-                    (int(row["X1"]), int(row["Y1"])) for index, row in coor.iterrows()
-                ]
-                puntos2 = [
-                    (int(row["X2"]), int(row["Y2"])) for index, row in coor.iterrows()
-                ]
+                
+                if (coor["X1"] > 112).any() or (coor["Y1"] > 112).any() or (coor["X2"] > 112).any() or (coor["Y2"] > 112).any():
+                    print(f"Skipped file {file} because it contains coordinates greater than 112.")
+                    continue
+                
+                puntos1 = coor.apply(lambda row: (int(row["X1"]), int(row["Y1"])), axis=1).tolist()
+                puntos2 = coor.apply(lambda row: (int(row["X2"]), int(row["Y2"])), axis=1).tolist()
                 landmarks = self.sort_points(puntos1, puntos2)
 
                 cap.set(cv2.CAP_PROP_POS_FRAMES, frame)
@@ -55,15 +56,15 @@ class FrameExtraction:
 
         frame_info.to_csv(self.images_info_path, index=False)
         print("¡Extraction Done!")
-        print("Path images: ", self.path_save)
-        print("Path df: ", self.images_info_path)
+        print(f"Path images: {self.path_save}")
+        print(f"Path df: {self.images_info_path}")
 
     def sort_points(self, puntos1, puntos2):
         lands = np.concatenate((puntos1, puntos2), axis=0)
 
         centroid = np.mean(lands, axis=0)
-        x = [coord[0] for coord in lands]
-        y = [coord[1] for coord in lands]
+        x = lands[:, 0]
+        y = lands[:, 1]
 
         angles = np.arctan2(y - centroid[1], x - centroid[0])
 
