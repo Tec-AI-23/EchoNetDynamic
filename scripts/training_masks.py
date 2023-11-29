@@ -137,7 +137,7 @@ def train(
         path = f"../saved_images/epoch_{epoch}"
 
         save_predictions_as_imgs(
-            train_dataloader, model, folder=path, device=device
+            test_dataloader, model, folder=path, device=device, model_type="masks"
         )
 
     # 6. Return the filled results at the end of the epochs

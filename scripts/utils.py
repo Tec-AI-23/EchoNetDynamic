@@ -10,11 +10,6 @@ from torchmetrics.classification import Dice
 from tqdm import tqdm
 
 
-def save_checkpoint(state, filename):
-    print("=> Saving checkpoint")
-    torch.save(state, filename)
-
-
 def load_checkpoint(checkpoint, model):
     print("=> Loading checkpoint")
     model.load_state_dict(checkpoint["state_dict"])
@@ -97,25 +92,14 @@ def save_predictions_as_imgs(
                 preds = (preds >= 0.5).float()
                 # save masks predictions as image
                 folder_creation(f"{folder}/masks_predictions")
-                for prediction in range(preds.shape[0]):
-                    torchvision.utils.save_image(
-                        preds[prediction],
-                        f"{folder}/masks_predictions/batch_{idx}_no{prediction}.png",
-                    )
 
-                # Saving original masks as individual images
-                folder_creation(f"{folder}/original_masks")
+                torchvision.utils.save_image(preds, f"{folder}/masks_predictions/batch_{idx}.png")
 
-                y[y == 1] = 255
-                for mask in range(y.shape[0]):
-                    torchvision.utils.save_image(
-                        y[mask], f"{folder}/original_masks/batch{idx}_no{mask}.png"
-                    )
-
-                    # cv2.imwrite(f"{folder}/original_masks/batch{idx}_no{mask}.png", y[mask].numpy())
-
-                # #Saving the masks as batch
-                # torchvision.utils.save_image(y, f"{folder}/{idx}.png")
+                # for prediction in range(preds.shape[0]):
+                #     torchvision.utils.save_image(
+                #         preds[prediction],
+                #         f"{folder}/masks_predictions/batch_{idx}_no{prediction}.png",
+                #     )
 
     elif model_type == "landmarks":
         for idx, data_dict in enumerate(loader):
