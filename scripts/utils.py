@@ -10,11 +10,6 @@ from torchmetrics.classification import Dice
 from tqdm import tqdm
 
 
-def save_checkpoint(state, filename):
-    print("=> Saving checkpoint")
-    torch.save(state, filename)
-
-
 def load_checkpoint(checkpoint, model):
     print("=> Loading checkpoint")
     model.load_state_dict(checkpoint["state_dict"])
@@ -35,7 +30,7 @@ def check_accuracy(loader, model, model_type, device="cuda"):
                 x = x.to(device)
                 y = y.to(device).unsqueeze(1)
                 preds = torch.sigmoid(model(x))
-                preds = (preds > 0.5).float()
+                preds = (preds >= 0.5).float()
                 num_correct += (preds == y).sum()
                 num_pixels += torch.numel(preds)
                 dice = Dice().to(device)
@@ -88,6 +83,7 @@ def save_predictions_as_imgs(
     model.eval()
     if model_type == "masks":
         for idx, data_dict in enumerate(loader):
+            idx +=1
             x = data_dict["image"]["data"]
             y = data_dict["mask"]["data"]
 
@@ -97,28 +93,18 @@ def save_predictions_as_imgs(
                 preds = (preds >= 0.5).float()
                 # save masks predictions as image
                 folder_creation(f"{folder}/masks_predictions")
-                for prediction in range(preds.shape[0]):
-                    torchvision.utils.save_image(
-                        preds[prediction],
-                        f"{folder}/masks_predictions/batch_{idx}_no{prediction}.png",
-                    )
 
-                # Saving original masks as individual images
-                folder_creation(f"{folder}/original_masks")
+                torchvision.utils.save_image(preds, f"{folder}/masks_predictions/batch_{idx}.png")
 
-                y[y == 1] = 255
-                for mask in range(y.shape[0]):
-                    torchvision.utils.save_image(
-                        y[mask], f"{folder}/original_masks/batch{idx}_no{mask}.png"
-                    )
-
-                    # cv2.imwrite(f"{folder}/original_masks/batch{idx}_no{mask}.png", y[mask].numpy())
-
-                # #Saving the masks as batch
-                # torchvision.utils.save_image(y, f"{folder}/{idx}.png")
+                # for prediction in range(preds.shape[0]):
+                #     torchvision.utils.save_image(
+                #         preds[prediction],
+                #         f"{folder}/masks_predictions/batch_{idx}_no{prediction}.png",
+                #     )
 
     elif model_type == "landmarks":
         for idx, data_dict in enumerate(loader):
+            idx +=1
             x = data_dict["image"]["data"]
             z = data_dict["heatmap"]["data"]
             y = data_dict["mask"]["data"]
@@ -126,77 +112,43 @@ def save_predictions_as_imgs(
             x = x.to(device=device)
             with torch.no_grad():
                 preds = torch.sigmoid(model(x))
-        # save heatmaps predictions as images, individually
-        save_batch_to_coordinate(preds, idx, folder)
 
-        # Saving original masks as individual images
-        folder_creation(f"{folder}/original_masks")
+            for index, batch in enumerate(preds):
+                index+=1
+                coordinates = []
+                for channel in batch:
+                    channel = channel.to('cpu').detach().numpy()
+                    max_coordinates = np.unravel_index(np.argmax(channel), channel.shape)
+                    coordinates.append(max_coordinates)
+                mask = generate_mask_from_coordinates(coordinates, preds.shape[2:])
 
-        y[y == 1] = 255
-        for mask in range(y.shape[0]):
-            torchvision.utils.save_image(
-                y[mask], f"{folder}/original_masks/batch{idx}_no{mask}.png"
-            )
+                folder_creation(f"{folder}/landmark_predictions")
 
-        # #Saving original images as individual images
-        # for imagen in range(y.shape[0]):
-        #     #cv2.imwrite(f"{folder}/image{idx}_{imagen}.png", x[imagen].permute(1,2,0).to("cpu").numpy())
-        #     torchvision.utils.save_image(x[imagen], f"{folder}/image{idx}_{imagen}.png")
-
-        # saving original images as batch
-        # torchvision.utils.save_image(x, f"{folder}/image{idx}.png")
+                #cv2.imwrite(f"{folder}/landmark_predictions/prueba_batch{idx}_{batch}.png", mask)
+                torchvision.utils.save_image(mask,f"{folder}/landmark_predictions/prueba_batch{idx}_{index}.png")
+ 
 
     model.train()
 
 
-def unravel_index(indices, shape):
-    shape = torch.tensor(shape)
-    indices = indices % shape.prod()  # prevent out-of-bounds indices
-
-    coord = torch.zeros(indices.size() + shape.size(), dtype=int)
-
-    for i, dim in enumerate(reversed(shape)):
-        coord[..., i] = indices % dim
-        indices = indices // dim
-
-    return coord.flip(-1)
+def generate_mask_from_coordinates(coordinates, shape):
+    centroid = np.mean(coordinates, axis=0)
+    poly = np.array(coordinates, np.int32)
+    img = np.zeros(shape, dtype=np.uint8)
+    cv2.fillPoly(img, [poly], 255)
+    img = torch.from_numpy(img)
+    return img.float()
 
 
-def save_batch_to_coordinate(t, idx, folder):
-    for batch in range(t.shape[0]):
-        img = np.zeros(t.shape[2:], dtype=np.uint8)
-        coor = []
-        for i in range(t.shape[1]):
-            coordenada = unravel_index(t[batch][i].argmax(), t.shape[2:])
-            coor.append(coordenada)
-        points = np.array(coor)
-        centroid = np.mean(points, axis=0)
-        angles = np.arctan2(points[:, 1] - centroid[1], points[:, 0] - centroid[0])
-        sorted_points = points[np.argsort(angles)]
-        poly = np.array(sorted_points, np.int32)
-        cv2.fillPoly(img, [poly], 255)
-
-        # guardar
-        folder_creation(f"{folder}/landmark_predictions")
-        cv2.imwrite(f"{folder}/landmark_predictions/prueba_batch{idx}_{batch}.png", img)
-
-
-def heatmap_to_image(t):
+def heatmap_to_image(heatmap):
     masks = torch.tensor([])
-    for batch in range(t.shape[0]):
-        img = np.zeros(t.shape[2:], dtype=np.uint8)
-        coor = []
-        for i in range(t.shape[1]):
-            coordenada = unravel_index(t[batch][i].argmax(), t.shape[2:])
-            coor.append(coordenada)
-        points = np.array(coor)
-        centroid = np.mean(points, axis=0)
-        angles = np.arctan2(points[:, 1] - centroid[1], points[:, 0] - centroid[0])
-        sorted_points = points[np.argsort(angles)]
-        poly = np.array(sorted_points, np.int32)
-        cv2.fillPoly(img, [poly], 255)
-
-        mask = torch.from_numpy(img).unsqueeze(0).unsqueeze(0)
+    for batch in heatmap:
+        coordinates = []
+        for channel in batch:
+            channel = channel.to('cpu').detach().numpy()
+            max_coordinates = np.unravel_index(np.argmax(channel), channel.shape)
+            coordinates.append(max_coordinates)
+        mask = generate_mask_from_coordinates(coordinates, heatmap.shape[2:])
         masks = torch.cat((masks, mask))
     return masks
 

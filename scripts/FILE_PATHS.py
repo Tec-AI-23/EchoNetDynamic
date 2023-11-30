@@ -2,6 +2,8 @@
 
 ECHONET = "../EchoNet-Dynamic"
 VIDEOS = "../EchoNet-Dynamic/videos"
+NEW_DATA = "../EchoNet-Dynamic/new_data"
+PREDICTIONS = "../EchoNet-Dynamic/results"
 
 DATA = "../EchoNet-Dynamic/data"
 IMAGES = "../EchoNet-Dynamic/data/images"
@@ -11,6 +13,8 @@ HEATMAPS = "../EchoNet-Dynamic/data/heatmaps"
 TRAIN = "../EchoNet-Dynamic/data/train"
 VALIDATION = "../EchoNet-Dynamic/validation"
 
+MASK_MODEL = "../EchoNet-Dynamic/models/mask"
+LANDMARK_MODEL = "../EchoNet-Dynamic/models/mask"
 
 def split(s):
     if s == "train":

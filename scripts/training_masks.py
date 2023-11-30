@@ -25,7 +25,7 @@ def train_step(model: torch.nn.Module,
         X, y = X.to(device), y.to(device)
 
         # 1. Forward pass
-        y_pred = torch.sigmoid(model(X))
+        y_pred = model(X)
 
         # 2. Calculate  and accumulate loss
         loss = loss_fn(y_pred, y)
@@ -41,7 +41,8 @@ def train_step(model: torch.nn.Module,
         optimizer.step()
 
         # Calculate and accumulate dice score metric across all batches
-        y_pred = (y_pred > 0.5)
+        y_pred = torch.sigmoid(y_pred)
+        y_pred = (y_pred >= 0.5)
         dice = Dice().to(device)
         y, y_pred = y.int(), y_pred.int()
         train_dice_score += dice(y_pred, y)
@@ -72,14 +73,15 @@ def test_step(model: torch.nn.Module,
             X, y = X.to(device), y.to(device)
     
             # 1. Forward pass
-            y_pred = torch.sigmoid(model(X))
+            y_pred = model(X)
 
             # 2. Calculate and accumulate loss
             loss = loss_fn(y_pred, y)
             test_loss += loss.item()
             
             # Calculate and accumulate dice score metric across all batches
-            y_pred = (y_pred > 0.5)
+            y_pred = torch.sigmoid(y_pred)
+            y_pred = (y_pred >= 0.5)
             dice = Dice().to(device)
             y, y_pred = y.int(), y_pred.int()
             test_dice_score += dice(y_pred, y)
@@ -137,7 +139,7 @@ def train(
         path = f"../saved_images/epoch_{epoch}"
 
         save_predictions_as_imgs(
-            train_dataloader, model, folder=path, device=device
+            test_dataloader, model, folder=path, device=device, model_type="masks"
         )
 
     # 6. Return the filled results at the end of the epochs
