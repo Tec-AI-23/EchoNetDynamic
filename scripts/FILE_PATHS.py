@@ -3,6 +3,7 @@
 ECHONET = "../EchoNet-Dynamic"
 VIDEOS = "../EchoNet-Dynamic/videos"
 NEW_DATA = "../EchoNet-Dynamic/new_data"
+PREDICTIONS = "../EchoNet-Dynamic/results"
 
 DATA = "../EchoNet-Dynamic/data"
 IMAGES = "../EchoNet-Dynamic/data/images"
