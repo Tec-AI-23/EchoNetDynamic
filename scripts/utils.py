@@ -83,6 +83,7 @@ def save_predictions_as_imgs(
     model.eval()
     if model_type == "masks":
         for idx, data_dict in enumerate(loader):
+            idx +=1
             x = data_dict["image"]["data"]
             y = data_dict["mask"]["data"]
 
@@ -103,6 +104,7 @@ def save_predictions_as_imgs(
 
     elif model_type == "landmarks":
         for idx, data_dict in enumerate(loader):
+            idx +=1
             x = data_dict["image"]["data"]
             z = data_dict["heatmap"]["data"]
             y = data_dict["mask"]["data"]
@@ -112,6 +114,7 @@ def save_predictions_as_imgs(
                 preds = torch.sigmoid(model(x))
 
             for index, batch in enumerate(preds):
+                index+=1
                 coordinates = []
                 for channel in batch:
                     channel = channel.to('cpu').detach().numpy()
@@ -120,7 +123,9 @@ def save_predictions_as_imgs(
                 mask = generate_mask_from_coordinates(coordinates, preds.shape[2:])
 
                 folder_creation(f"{folder}/landmark_predictions")
-                torchvision.utils.save_image(mask,f"{folder}/landmark_predictions/prueba_batch{idx}_{batch}.png")
+
+                #cv2.imwrite(f"{folder}/landmark_predictions/prueba_batch{idx}_{batch}.png", mask)
+                torchvision.utils.save_image(mask,f"{folder}/landmark_predictions/prueba_batch{idx}_{index}.png")
  
 
     model.train()
@@ -132,7 +137,7 @@ def generate_mask_from_coordinates(coordinates, shape):
     img = np.zeros(shape, dtype=np.uint8)
     cv2.fillPoly(img, [poly], 255)
     img = torch.from_numpy(img)
-    return img
+    return img.float()
 
 
 def heatmap_to_image(heatmap):

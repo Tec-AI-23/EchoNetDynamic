@@ -7,13 +7,30 @@ from utils import save_predictions_as_imgs
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
+import os
+import torchvision
 
-def generate_mask_from_coordinates(coordinates, shape):
+def folder_creation(folder):
+    isExist = os.path.exists(folder)
+    if not isExist:
+        # Create a new directory because it does not exist
+        os.makedirs(folder)
+
+def sort_coordinates(coordinates):
+    coordinates = np.array(coordinates)
     centroid = np.mean(coordinates, axis=0)
+    x = coordinates[:, 0]
+    y = coordinates[:, 1]
+    angles = np.arctan2(y - centroid[1], x - centroid[0])
+    sorted_indices = np.argsort(angles)
+    sorted_points = [coordinates[i] for i in sorted_indices]
+    return sorted_points
+
+def generate_mask_from_coordinates(coor, shape):
+    coordinates = sort_coordinates(coor)
     poly = np.array(coordinates, np.int32)
     img = np.zeros(shape, dtype=np.uint8)
     cv2.fillPoly(img, [poly], 255)
-
     return img
 
 
@@ -29,7 +46,7 @@ def train_step(model: torch.nn.Module,
     train_loss, train_dice_score = 0, 0
     
     # Loop through data loader data batches
-    for batch, (data_dict) in enumerate(dataloader):
+    for index_batch, (data_dict) in enumerate(dataloader):
         # Send data to target device
         X = data_dict["image"]["data"]
         y = data_dict["heatmap"]["data"]
@@ -38,10 +55,11 @@ def train_step(model: torch.nn.Module,
         z  = data_dict["mask"]["data"]
 
         # 1. Forward pass
-        y_pred = torch.sigmoid(model(X)).double()
+        y_pred = model(X).float()
+
 
         # 2. Calculate  and accumulate loss
-        loss = loss_fn(y_pred, y)
+        loss = loss_fn(y_pred, y.float())
         train_loss += loss.item() 
 
         # 3. Optimizer zero grad
@@ -58,6 +76,7 @@ def train_step(model: torch.nn.Module,
         # Find the coordinates of the maximum value, per channel
 
         dice = Dice().to(device)
+        y_pred = torch.sigmoid(y_pred)
 
         batch_train_dice_score = 0
         for index, batch in enumerate(y_pred):
@@ -66,11 +85,12 @@ def train_step(model: torch.nn.Module,
                 channel = channel.to('cpu').detach().numpy()
                 max_coordinates = np.unravel_index(np.argmax(channel), channel.shape)
                 coordinates.append(max_coordinates)
+
             mask = generate_mask_from_coordinates(coordinates, y_pred.shape[2:])
             mask[mask == 255.0] = 1.0
 
             mask= torch.tensor(mask)
-            batch_train_dice_score += dice(z[index], mask)
+            batch_train_dice_score += dice(z[index].int(), mask.int())
 
         train_dice_score = batch_train_dice_score / y_pred.shape[0]
 
@@ -83,7 +103,7 @@ def train_step(model: torch.nn.Module,
 def test_step(model: torch.nn.Module, 
               dataloader: torch.utils.data.DataLoader, 
               loss_fn: torch.nn.Module,
-              device):
+              device, epoch):
     # Put model in eval mode
     model.eval() 
     
@@ -93,19 +113,17 @@ def test_step(model: torch.nn.Module,
     # Turn on inference context manager
     with torch.inference_mode():
         # Loop through DataLoader batches
-        for batch, (data_dict) in enumerate(dataloader):
+        for index_batch, (data_dict) in enumerate(dataloader):
             X = data_dict["image"]["data"]
             y = data_dict["heatmap"]["data"]
             # Send data to target device
             X, y = X.to(device), y.to(device)
 
             z  = data_dict["mask"]["data"]
-            
             # 1. Forward pass
-            y_pred = torch.sigmoid(model(X)).double()
-
+            y_pred = model(X).float()
             # 2. Calculate and accumulate loss
-            loss = loss_fn(y_pred, y)
+            loss = loss_fn(y_pred, y.float())
             test_loss += loss.item()
             
             # Calculate and accumulate dice score metric across all batches
@@ -113,6 +131,11 @@ def test_step(model: torch.nn.Module,
             # Find the coordinates of the maximum value, per channel
 
             dice = Dice().to(device)
+            y_pred = torch.sigmoid(y_pred)
+
+            folder=f"../saved_images/epoch_{epoch}"
+            folder_creation(f"{folder}/heatmap_predictions")
+            torch.save(y_pred, f"{folder}/heatmap_predictions/prueba_batch{index_batch}.pt")
 
             batch_test_dice_score = 0
             for index, batch in enumerate(y_pred):
@@ -123,9 +146,16 @@ def test_step(model: torch.nn.Module,
                     coordinates.append(max_coordinates)
                 mask = generate_mask_from_coordinates(coordinates, y_pred.shape[2:])
                 mask[mask == 255.0] = 1.0
-
                 mask= torch.tensor(mask)
-                batch_test_dice_score += dice(z[index], mask)
+
+                #guardar mascara
+                folder=f"../saved_images/epoch_{epoch}"
+                folder_creation(f"{folder}/landmark_predictions")
+                torchvision.utils.save_image(mask.float(),f"{folder}/landmark_predictions/prueba_batch{index_batch}_{index}.png")
+                #save dice score
+                batch_test_dice_score += dice(z[index].int(), mask.int())
+
+
 
             test_dice_score = batch_test_dice_score / y_pred.shape[0]
                 
@@ -159,9 +189,10 @@ def train(
                                            loss_fn=loss_fn,
                                            optimizer=optimizer,
                                            device=device)
+
         test_loss, test_acc = test_step(model=model,
             dataloader=test_dataloader,
-            loss_fn=loss_fn,device=device)
+            loss_fn=loss_fn,device=device, epoch = epoch)
         
         # 4. Print out what's happening
         print(
@@ -177,13 +208,6 @@ def train(
         results["train_acc"].append(train_acc.to('cpu').item())
         results["test_loss"].append(test_loss)
         results["test_acc"].append(test_acc.to('cpu').item())
-
-        #save predictions
-        path = f"../saved_images/epoch_{epoch}"
-
-        save_predictions_as_imgs(
-            train_dataloader, model, folder=path, device=device, model_type = "landmarks"
-        )
 
     # 6. Return the filled results at the end of the epochs
     return results

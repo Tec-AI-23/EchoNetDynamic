@@ -22,7 +22,7 @@ class FrameExtraction:
         frame_info = pd.DataFrame(columns=["File", "X", "Y"])
         files = os.listdir(self.path)
 
-        for file in files[:1000]:
+        for file in files:
             path_video = os.path.join(self.path, file)
             frames = self.video_info[self.video_info.FileName == file]["Frame"].unique()
             cap = cv2.VideoCapture(path_video)

@@ -142,11 +142,6 @@ def train(
             test_dataloader, model, folder=path, device=device, model_type="masks"
         )
 
-        filename = "../EchoNet-Dynamic/models/mask_model.pth"
-
-        torch.save(model.state_dict(), filename)
-        print(f"checkpoint saved")
-
     # 6. Return the filled results at the end of the epochs
     return results
 
