@@ -56,9 +56,9 @@ Then, run the script `requirements_generator.py`, which fetches the latest stabl
 
 However, if a certain version that is not the latest is needed, **DO NOT RUN `requirements_generator.py`**! This is just a temporal automation.
 
-## Paper: https://www.overleaf.com/read/zhxjjgnxgpkp#a7c8a6
-
 # Left Ventricle Automatic Segmentation with Deep Learning on the EchoNet Dynamic Dataset
+
+## Paper: https://www.overleaf.com/read/zhxjjgnxgpkp#a7c8a6
 
 #### Team Members
 
@@ -185,6 +185,9 @@ We noted that the model created with the mask approach seems to behave well with
 
 ### Experiment 3
 In this experiment, 1,000 images from the data set were split into 80% (800 images) training and 20% (200 images) test. The model was trained over 5 epochs (this low amount of epochs was chosen because of the long time this method takes for training) using the landmark approach.
+
+### Experiment 4
+
 
 ### Results
 
