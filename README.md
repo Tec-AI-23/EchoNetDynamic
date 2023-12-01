@@ -56,6 +56,8 @@ Then, run the script `requirements_generator.py`, which fetches the latest stabl
 
 However, if a certain version that is not the latest is needed, **DO NOT RUN `requirements_generator.py`**! This is just a temporal automation.
 
+## Paper: https://www.overleaf.com/read/zhxjjgnxgpkp#a7c8a6
+
 # Left Ventricle Automatic Segmentation with Deep Learning on the EchoNet Dynamic Dataset
 
 #### Team Members
@@ -155,12 +157,6 @@ In order to create a mask, we need at least 3 landmarks. The problem is that the
 ![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/5873eb09-fd0e-4cd2-a184-dbc60a58be37)
 ![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/7622f0c8-1e5d-413d-892b-a6110184c8c1)
 
-## Experiments
-Below we will show you in detail some of the problems we faced during the development of this project.
-
-### Heat maps methods
-The landmark approximation required us to formulate the best possible heat map, so we had to try different methods.
-
 - **Pixel expansion:** In order to make the network predict the landmark close to the given one, the acceptable area should be narrowed down. To make that possible, the pixels given by the dataset are "expanded" so that their size is greater than only the one pixel they initially represent.
 
 - **Border limits:** We needed the model to be able to differentiate between a point close to the given landmark but outside the ventricle border and one inside the ventricle border. So we had to delimit the edges so that it would not predict outside that area. To do this, we use two morphological operations from the OpenCV library: erosion and dilation. Erosion is a filter that given a pixel, analyzes the value of n-number of pixels around it, if the value of all those pixels around it is 1, then the given central pixel will also be 1, otherwise, it will be 0. Dilation is a filter that works similar to erosion, but it will only give 0 to the given central pixel if the pixels around it are also 0, otherwise, it will be 1. So what these two operations help us with is that dilation makes the area of the mask grow, and erosion makes the area shrink, and with an XOR operation we compare them and get a final image that gives us the outline.
@@ -169,10 +165,30 @@ The landmark approximation required us to formulate the best possible heat map, 
 
 $$Euc = \sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2}$$
 
+![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/db6bc615-7777-492e-91ec-2b588608e8b4)
+
 - **Gaussian distribution:** With the "gaussian" function of the Scikit-Image library and apply a Gaussian filter, which given a specific area, marks the central pixel as the highest value and as it moves away from the center, it takes lower and lower values, creating a Gaussian distribution. Once given the map, we multiply again with the previous maps and finally define correctly the area in which the model can predict the landmarks.
 
-### Optimal landmarks
+- **Optimal landmarks:**
 As mentioned earlier, the number of landmarks is something we have to consider because of the computational processing required. With this in mind, we wanted to determine the most important landmarks to keep the mask quality, no matter the number of landmarks. The method we used was to calculate the angle between one landmark, the past one, and the next one. The landmarks with smaller angles are the most important ones, and as the angle is closer to 180° it can be ignored without losing important information. 
+
+![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/b5cd4f75-ec86-4651-9674-41026f6ac60f)
+
+## Experimentation and results
+Below we will show you the training methods, results, and its interpretation.
+
+### Experiment 1
+We split the data set in 80% (16038 images) for training and 20% (4010 images) for test. The image segmentation was done with the mask approach model. The model was trained over 20 epochs.
+
+### Experiment 2
+We noted that the model created with the mask approach seems to behave well with few epochs, we trained the model using only 5 epochs and 2000 images split into 80% (1600 images) training and 20% (400 images) test.
+
+### Experiment 3
+In this experiment, 1,000 images from the data set were split into 80% (800 images) training and 20% (200 images) test. The model was trained over 5 epochs (this low amount of epochs was chosen because of the long time this method takes for training) using the landmark approach.
+
+### Results
+
+
 
 [^1]: Nasim, M. A. A., Munem, A. A., Islam, M., Palash, M. A. H., Haque, M. M. A., & Shah, F. M. (2023). Brain tumor segmentation using enhanced u-net model with empirical analysis.
 [^2]: Long, J., Shelhamer, E., & Darrell, T. (2015, June). Fully convolutional net-works for semantic segmentation. In Proceedings of the ieee conference on computer vision and pattern recognition (cvpr).
