@@ -85,6 +85,25 @@ Like we said before, the data set contains clinical measurements that will be ig
 
 ## Methodology
 
+### System specifications
+To create the model, we used Python 3.11 and PyTorch, which is a framework that specializes at designing and implementing deep learning models in Python. The PyTorch version is 2.1.0. The computer where the model was run and tested was a laptop with 8 GB RAM
+and a 3070 Ti NVIDIA graphic card. The other libraries that we also used are next:
+- requests==2.31.0
+- setuptools==69.0.2
+- numpy==1.26.2
+- pandas==2.1.3
+- matplotlib==3.8.2
+- pillow==10.1.0
+- torchvision==0.16.1
+- opencv-python==4.8.1.78
+- scikit-learn==1.3.2
+- scikit-image==0.22.0
+- seaborn==0.13.0
+- ipython==8.18.1
+- tqdm==4.66.1
+- albumentations==1.3.1
+- torchmetrics==1.2.0
+
 ### Deep Learning
 This methodology makes use of a perceptron, which is given any number of input characteristics and balances the weights of the inputs to get as close as possible to the expected output. The main difference between a Deep Neural Network (DNN) and a simple perceptron model is that the DNN layers contain any number of neurons, which allows each layer to extract features and interpret the data in different ways.
 
@@ -92,10 +111,6 @@ This methodology makes use of a perceptron, which is given any number of input c
 Better known as CNN, is a Deep Learning technique that process images. An important factor about CNN is its convolutional layers, which use filters to extract features from the image.  They also consist of pooling layers that are responsible for reducing the dimensionality of the image, to process it more easily and efficiently.  Within this category, there is another type of layer, the max pool layer, which takes the maximum value of a pixel area of the image to create a new smaller image.
 
 ![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/6700636f-46ce-442f-b135-1b602eb8a58f)
-
-### Software and Hardware
-To create the model, we used PyTorch, which is a framework that specializes at designing and implementing deep learning models in Python. The PyTorch version is 2.1.0. The computer where the model was run and tested was a laptop with 8 GB RAM
-and a 3070 Ti NVIDIA graphic card.
 
 ### Architecture Used (U-Net)
 We used a U-Net[^3] architecture, that was created to solve biomedical image processing tasks, so its designed to solve problems similar to ours. The U-Net doesn't require a lot of data to be trained and it has some characteristics that capture both local and global image features.
