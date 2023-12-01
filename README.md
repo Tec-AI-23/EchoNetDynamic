@@ -120,24 +120,16 @@ The next figure shows a fully convolutional network, it assigns a class to each 
 ![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/4148ac70-0382-44ec-92a8-cdaabd31c16d)
 
 ### Mask Approach
-The model will receive the echocardigram image and will return the mask of the left ventricle. The mask is an image that can only take 0's and 1's as values for each pixel. To train the model we will need to create the mask with help of the above mentioned coordinates. Since the predicted masks need to be compared with the actual masks, we will use the Dice Score formula. Which compares every pixel of both images and return a number value between 0 and 1, the closer to 1, the better the mask.
+The model will receive the echocardigram image and will return the mask of the left ventricle. The mask is an image that can only take 0's and 1's as values for each pixel. To train the model we will need to create the mask with help of the above mentioned coordinates. The loss function used for this approach was the binary cross entropy, which is a function used to measure the difference between predicted and real binary labels and follows the next formula:
+
+$$BCE = -(y\log(\hat{y}) + (1 - y)\log(1 - \hat{y}))$$
+
+Where $y$ is the real label and $\hat{y}$ is the predicted label. This can be done because image segmentation using a Fully Convolutional Network can be considered a pixel by pixel classification problem, where the two possible values are 0 and 1.
+
+Since the predicted masks need to be compared with the actual masks, we will use the Dice Score formula. Which compares every pixel of both images and return a number value between 0 and 1, the closer to 1, the better the mask.
 
 $$Dice = \frac{2 * |X \cap Y|}{|X|+|Y|}$$
 
-### Landmark approach
-In this approach, the model will be fed with the original image, and will return a tensor as a probability map of which pixels could be a landmark. Landmarks are key points in the shape of the image we want to identify. The way to identify these landmarks depends on the problem, but the goal is that a set of landmarks can cover as much as possible the area to be identified.
-
-Given the situation that there are objectively no correct landmarks, even if made by a human, this approach becomes complicated. Because by training the model with specific coordinates, the model will consider those to be the only correct landmarks and will correct for others that might be considered different but correct. To avoid this situation, we will give the model a probability map during training to correctly calculate the backpropagation, and thus only correct landmarks that are far away from the edges or key points of the figure.
-
-In order to create a mask, we need at least 3 landmarks. The problem is that the veracity of a 3-point mask would only be a triangle and would not correctly cover the area of the figure, even if the landmarks are correct. On the other hand, increasing the number of landmarks too much, also increases the processing weights of the model algorithm to be trained, increasing the time significantly. So we opted for 7 landmarks because it gives us enough information about the curvatures of the figure and in this way we do not exceed the weights of the model, but this doesn't mean that this is really the optimal number.
-
-![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/5873eb09-fd0e-4cd2-a184-dbc60a58be37)
-![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/7622f0c8-1e5d-413d-892b-a6110184c8c1)
-
-## Experiments
-Below we will show you in detail some of the problems we faced during the development of this project.
-
-### Mask extraction methods
 As explained above, we had to create the masks ourselves from a set of coordinates. To address this, we experimented with 3 methods to make the masks, but all of them were implemented with the OpenCV function, "fillPoly". This function requires as parameters, the image where the polygon will be drawn, the points of the polygon (in this case, our coordinates), and the color.
 
 The problem is that the coordinates were not sorted, so if we entered the set of coordinates as we received it, we obtained different types of figures that did not work as masks. So we had to experiment with how we sorted the points. The following are the methods we used.
@@ -147,6 +139,24 @@ The problem is that the coordinates were not sorted, so if we entered the set of
 - **Centroid Method:** Calculating the mean between all the points, we created a centroid. Using that centroid and the "arctan2" Numpy function, we created a sorted array.
 
 - **Convex Hull Method:** Using the OpenCV function, "convexHull", which scans the array of coordinates using the Sklansky algorithm and sorts them.
+
+
+### Landmark approach
+In this approach, the model will be fed with the original image, and will return a tensor as a probability map of which pixels could be a landmark. Landmarks are key points in the shape of the image we want to identify. The way to identify these landmarks depends on the problem, but the goal is that a set of landmarks can cover as much as possible the area to be identified.
+
+Given the situation that there are objectively no correct landmarks, even if made by a human, this approach becomes complicated. Because by training the model with specific coordinates, the model will consider those to be the only correct landmarks and will correct for others that might be considered different but correct. To avoid this situation, we will give the model a probability map during training to correctly calculate the backpropagation, and thus only correct landmarks that are far away from the edges or key points of the figure.The loss function given to the model is the Cross Entropy, which follows the next formula:
+
+$$CE = -\sum y\log(\hat{y})$$
+
+Where $y$ is the true value and $\hat{y}$ is the predicted value. Note that, when there are only two classes, this formula becomes the one described in the mask approach.
+
+In order to create a mask, we need at least 3 landmarks. The problem is that the veracity of a 3-point mask would only be a triangle and would not correctly cover the area of the figure, even if the landmarks are correct. On the other hand, increasing the number of landmarks too much, also increases the processing weights of the model algorithm to be trained, increasing the time significantly. So we opted for 7 landmarks because it gives us enough information about the curvatures of the figure and in this way we do not exceed the weights of the model, but this doesn't mean that this is really the optimal number.
+
+![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/5873eb09-fd0e-4cd2-a184-dbc60a58be37)
+![image](https://github.com/Tec-AI-23/EchoNetDynamic/assets/83721976/7622f0c8-1e5d-413d-892b-a6110184c8c1)
+
+## Experiments
+Below we will show you in detail some of the problems we faced during the development of this project.
 
 ### Heat maps methods
 The landmark approximation required us to formulate the best possible heat map, so we had to try different methods.
